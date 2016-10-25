@@ -1,0 +1,626 @@
+\chapter{Preliminaries}
+To understand the formal models of steganography presented in the next
+chapter, we first need to introduce some basic notations concerning
+probabilities, algorithms and cryptographic primitives. We denote the
+set of natural numbers, including $0$, by $\nats$, the set of real
+numbers by $\reals$ and the set of rational numbers by $\rats$. For an
+alphabet $\Sigma$ and a string $s\in \Sigma^{*}$, we denote the length
+of $s$ by $|s|$ and for two strings $s,s'\in \Sigma^{*}$, the
+concatenation of $s$ and $s'$ is written as $s\concat s'$. For a set
+$S$, denote by $\powerset(S)$ the set of all subsets of $S$. 
+
+
+
+\section{Probabilities}
+As the undetectable embedding of a message into a document is an
+inherent random process, we will now give a short overview on the
+probability theory needed in this work. As no continuous probability
+spaces are used in this thesis, it is sufficient to focus on the
+discrete case. For a thorough discussion of this subject, see \eg the
+textbook of \citeauthor{mitzenmacher2005probability}
+\cite{mitzenmacher2005probability}. A
+\myDef{probability distribution} $\Pr$ upon a \myDef{probability space}
+$\Omega$ -- a finite or countable infinite set -- is a function
+$\Pr\colon\powerset(\Omega)\to [0,1]$ such that $\Pr(\emptyset)=0$,
+$\Pr(\Omega)=1$ and $\Pr(A\cup B)=\Pr(A)+\Pr(B)-\Pr(A\cap B)$ for all
+$A,B\subseteq \Omega$. The elements of $\Omega$ are called
+\myDef{elementary events} and subsets of $\Omega$ are simply called
+\myDef{events}. To simplify notation, we omit the probability space if
+it is clear from the context or denote it by $\dom(\Pr)$. A very
+important subset of elementary events is the set of all elementary
+events that may occur, \ie those that have probability greater than
+zero. This set is called the \myDef{support} of $\Pr$ and we denote it
+by $\supp(\Pr)=\{\omega\in \dom(\Pr)\mid \Pr(\omega) > 0\}$. The
+\myDef{min-entropy} measures the amount of randomness of a probability
+distribution $\Pr$ and is defined as
+$\minent(\Pr)=\min_{\omega\in \supp(\Pr)}\{-\log \Pr(\omega)\}$. For two
+events $A$ and $B$, the \myDef{conditional probability} that $A$ occurs
+given that $B$ occurs is defined as
+$\Pr(A\mid B) := \frac{\Pr(A\cap B)}{\Pr(B)}$. We say that $A$ and $B$
+are \myDef{independent events}, if $\Pr(A\mid B)=\Pr(A)$.
+
+\begin{example}
+  To describe the throw of a six-sided dice, the elementary events are
+  described by
+  $\Omega=\dom(\Pr)=\{\epsdice{1},\epsdice{2},\epsdice{3},\epsdice{4},\epsdice{5},\epsdice{6}\}$. The
+  probabilities are then given by
+  $\Pr(\{\epsdice{1}\})=\Pr(\{\epsdice{2}\})=\Pr(\{\epsdice{3}\})=\Pr(\{\epsdice{4}\})=\Pr(\{\epsdice{5}\})=\Pr(\{\epsdice{6}\})=1/6$. The
+  Events $A=\{\epsdice{1},\epsdice{3},\epsdice{5}\}$ (whether the thrown
+  side shows an odd number of eyes) and $B=\{\epsdice{5},\epsdice{6}\}$
+  (whether the number of eyes is strictly larger than four) are
+  independent, as $\Pr(A)=1/2$, $\Pr(B)=1/3$ and
+  $\Pr(A\cap B)=\Pr(\{\epsdice{5}\})=1/6$. \myNote{Examples always end
+    with \examplesymbol}
+\end{example}
+
+It is often convenient to assign numerical values to the elementary
+events. This is formally described by the notion of a
+(real-valued) \myDef{random variable}, which is a mapping from $\Omega$
+to $\reals$. If $\Pr$ is a probability distribution on $\Omega$ and $X\colon
+\Omega\to \reals$ is a random variable, we define $\Pr[X=x] :=
+\Pr(X^{-1}(x))$ as the probability that $X$ gets the value $x$. To
+measure the expected outcome of a random variable $X$, we define the
+\myDef{expected value} of $X$ as $\Exp[X] := \sum_{x\in X(\Omega)}x\cdot
+\Pr[X=x]$. Two random variables $X$ and $Y$ are \myDef{independent
+  random variables}, if $X^{-1}(x)$ and $Y^{-1}(y)$ are independent
+events for all $x\in \img(X)$ and all $y\in \img(Y)$. 
+\begin{example}
+  Continuing the previous example, the canonical random variable $X$
+  would assign $X(\epsdice{1})=1$, $X(\epsdice{2})=2$ and so on. But we
+  could also measure whether the number of eyes was odd by using the
+  random variable $Y$ with
+  $Y(\epsdice{1})=Y(\epsdice{3})=Y(\epsdice{5})=1$ and
+  $Y(\epsdice{2})=Y(\epsdice{4})=Y(\epsdice{6})=0$. Hence
+  $\Pr[Y=1]=\Pr(Y^{-1}(1))=\Pr(\{\epsdice{1},\epsdice{2},\epsdice{3}\})$.
+  The respective expected values are $\Exp[X]=7/2$ and $\Exp[Y]=1/2$.
+\end{example}
+
+
+The simplest random variable one can think of is a binary indicator
+variable that only takes values $0$ and $1$. A \myDef{Bernoulli random
+  variable} $X$ with parameter $p$ only takes the values $0$ and $1$
+with probability $p$ and $1-p$ \ie $\Pr[X=0]=p$ and $\Pr[X=1]=1-p$. If
+$X_{1},X_{2},\ldots,X_{n}$ are independent Bernoulli random variables
+with parameters $p_{1}=p_{2}=\ldots=p_{n}=p$, their sum
+$X=\sum_{i=1}^{n}X_{i}$ is called a \myDef{Binomial random variable} $X$
+with parameters $p$ and $n$. It takes values $0,1,\ldots,n$ with
+$\Pr[X=k]=\binom{n}{k}\cdot p^{k}\cdot (1-p)^{n-k}$ for each
+$k=0,1,\ldots,n$. 
+
+It is often important to rule out some events by proving that they very
+rarely occur. For the special case of a (generalized) Binomial random
+variable $X$, the extremely helpful \emph{Chernoff bound} shows that $X$
+very rarely deviates from its expected value.
+
+\begin{theorem}[Chernoff Bound]
+Let $X_{1},\ldots,X_{n}$ be independent Bernoulli random variables
+with parameters $p_{1},p_{2},\ldots,p_{n}$ and $X=\sum_{i=1}^{n}X_{i}$
+with expected value $\mu=\Exp[X]=\sum_{i=1}^{n}p_{i}$. For every $0< \delta < 1$,
+\begin{align*}
+  \Pr[|X-\mu|\geq \delta\cdot \mu]\leq 2\cdot \exp(-(\mu\cdot \delta^{2})/3).
+\end{align*}
+\end{theorem}
+
+
+\begin{example}
+  The Chernoff bound tells us that after throwing $1{,}000$ fair coins,
+  the probability that at most $100$ heads or at least $900$ heads
+  occurred, is bounded by $2\cdot \exp(-(500\cdot 0{.}8\cdot
+  0{.}8)/3)\leq 10^{-48}$.
+\end{example}
+
+
+By letting the parameter $n$ grow to $\infty$, while keeping $p=p(n)$ as
+a bounded function of $n$, the resulting random variable will also be
+useful in the later chapters and is easily described by the following
+theorem (see \eg \cite[pp. 98-99]{mitzenmacher2005probability} for a proof). 
+
+\begin{theorem}
+  Let $X_{n}$ be a Binomial random variable with parameters $n$ and $p(n)$,
+  where $p$ is a function of $n$ and $\lim_{n\to \infty} n\cdot
+  p(n)=\mu$ is a constant independent of $n$. Then, for any fixed
+  $k$, 
+  \begin{align*}
+    \lim_{n\to \infty}\Pr[X_{n}=k]=\frac{\exp(-\mu)\cdot \mu^{k}}{k!}. 
+  \end{align*}
+\end{theorem}
+
+This fact leads to the definition of a Poisson random variable. A
+\myDef{Poisson random variable} with parameter $\mu$ takes values in
+$\nats$ with probability $\Pr[X=k]=\frac{\exp(-\mu)\cdot \mu^{k}}{k!}$. These random
+variable can be used to analyze a variety of \emph{balls into bin}
+experiments relatively easy and we will make use of them later on. 
+
+
+
+\section{Algorithms}
+We use \emph{Turing machines} as our model of computation in this
+work. For a detailed introduction and formal definitions, see
+the textbook of \citeauthor{papadimitriou1994complexity}
+\cite{papadimitriou1994complexity}. The Turing machines in this work
+will also be able to make independent fair coin flips and will thus be
+called \myDef{\ac{PTM}}. We will use the
+terms \ac{PTM} and algorithm interchangeably.  The output of such a
+machine is thus a random variable upon the probability space
+$\{0,1\}^{k}$, where $k$ is the maximum number of coin flips performed
+by the machine. Similarly, the \myDef{running time} of a \ac{PTM} is defined
+as the expected number of steps that the machine performs and is a
+function of the length of its input. If the running time of a \ac{PTM} $\machine$ is
+bounded by a polynomial, we say that $\machine$ is a \myDef{\ac{PPTM}} or an
+efficient algorithm.
+
+Often, the machine $\machine$ will also be equipped with different
+\myDef{oracles}, that allow us to increase the abilities of $\machine$. See the
+next section for examples of this. 
+\begin{itemize}
+\item For a random variable $X$ (\eg another machine), the PTM $\machine^{X}$
+  can get a sample $x$ distributed according to $X$. If $X$ is the
+  uniform distribution on a set $S$, we simply write
+  $\machine^{S}$. The running time to receive
+  a single sample is simply the encoding length of the sample.
+\item If $f\colon U\to V$ is a function, $\machine^{f}$ can provide an element
+  $u\in U$ and gets back the value $f(u)$.  The running time for this
+  operation is the encoding length of $u$ plus the encoding length of
+  $f(u)$. 
+\end{itemize}
+If $\machine$ can access several oracles $O_{1},O_{2},\ldots$, we write
+$\machine^{O_{1},O_{2},\ldots}$. If an algorithm $\machine$ gets a sample $x$
+distributed according to the random variable $X$, we denotes this as
+$x\gets X$ and $x\gets \machine$ for the output of the randomized
+algorithm. If $\machine$ is not randomized, i.e. it can only output a
+single value for fixed inputs, we denote this by $x := \machine$ to
+highlight this difference. If $S$ is a finite set, we denote the
+uniform sampling of a random element $s$ of $S$ by $s\sgets
+S$. 
+
+If $\Pr$ is a probability distribution, we say
+that $\Pr$ is a \myDef{efficiently sampleable distribution}, if there is a \ac{PPTM}
+$\machine$ that gets no input such that the output distribution of
+$\Pr$ and $\machine$ is the same. A sequence of probability
+distributions $\Pr_{1},\Pr_{2},\ldots$ will also be denoted as
+$\{\Pr_{n}\}_{n\in \nats}$ and is called an \myDef{distribution ensemble}. A
+distribution ensemble $\{\Pr_{n}\}_{n\in \nats}$ is called an \myDef{efficiently
+  sampleable ensemble}, if there is a \ac{PPTM} $\machine$ such that
+its upon the unary encoding of a number $n$ -- denoted by $1^{n}$ -- is
+the same as $\Pr_{n}$, \ie $\machine(1^{n})=\Pr_{n}$. 
+Similarly, a function $f\colon U\to V$ is \myDef{efficiently
+  computable}, if there is a \ac{PPTM} $\machine$ such that
+$\machine(u)=f(u)$ for all $u\in U$. 
+
+\section{Cryptographic Primitives}
+We will make use of a wide range of cryptographic primitives ranging
+from \emph{one-way functions} to \emph{public-key cryptosystems}. Most
+of the definitions are taken from or inspired by the excellent textbook
+of \citeauthor{lindell2007introduction}
+\cite{lindell2007introduction}. 
+
+Two
+main approaches for the definition of cryptographic primitives exist in
+the literature. In the first approach, the length of the key (also
+called the \myDef{security parameter}) is treated as a
+constant. Consequently, the running time of all involved algorithms are
+also a constant. The typical assumption in this model is that a
+primitive is $(t,\epsilon)$-secure, \ie the advantage of every attacker 
+with running time $t$ against the primitive is at most $\epsilon$. This
+line of work was first introduced by \citeauthor{bellare1997concrete}
+and is commonly called \myDef{concrete security}
+\cite{bellare1997concrete}. 
+ The second approach -- the \myDef{asymptotic
+  security} -- treats the security parameter as a variable and analyzes
+the security of the primitives in an asymptotic way, \ie for large
+enough values. We typically denote this variable with $\kappa$ and the
+corresponding key $k\in \{0,1\}^{\kappa}$ with $k$.
+To define security in this setting, the notion of
+negligible functions is needed. A function $\negl\colon \nats\to [0,1]$
+is called \myDef{negligible} if for every polynomial $p$, there is
+$n_{0}\in \nats$ such that $\negl(n) < p(n)^{-1}$ for every
+$n\geq n_{0}$. Hence, a negligible function decreases faster than the
+inverse of every polynomial. 
+\begin{example}
+  Typical examples for negligible functions are $n\mapsto 2^{-n}$,
+  $n\mapsto 1{.}01^{-n}$,  $n\mapsto 2^{-0{.}1n}$, but also $n\mapsto
+  n^{-\log n}$. 
+\end{example}
+The typical assumption in the asymptotic security setting is now that
+upon security parameter $\kappa$, every attacker that runs in time $p(\kappa)$ for
+a polynomial $p$ only has a negligible advantage of $\negl(\kappa)$ to break the
+primitive. 
+
+While the concrete approach gives more concrete bounds, the analysis of
+the security in the asymptotic approach is often more helpful in
+understanding the underlying arguments. Additionally, it is unclear for
+which parameters $t$ and $\epsilon$ we can treat a primitive as
+"secure". As one can typically easily translate asymptotic bounds into
+concrete bound and as we want to emphasize upon the arguments rather
+than those concrete bounds, we have decided to use the asymptotic
+approach in this work. For a more thorough discussion of this models,
+see the textbook of \citeauthor{lindell2007introduction}
+\cite[pp. 49-52]{lindell2007introduction}.  For an example of the
+concrete approach in steganography see \eg
+\cite{berndt2016pattern}. Throughout this chapter, let $\ell$, $\ell'$
+and $L$ be polynomials.
+
+\subsection*{One-Way Functions}
+A function $\sff\colon \{0,1\}^{*}\to \{0,1\}^{*}$ is called a
+\myDef{one-way function}, if the following properties hold:
+\begin{itemize}
+\item For all $n\in
+  \nats$ and all $x\in \{0,1\}^{n}$, we have $\ell(n)\leq |\sff(x)|\leq
+  \ell'(n)$. 
+\item The function $\sff$ is efficiently computable.
+\item For every \ac{PPTM} $\Inv$ (the \emph{inverting algorithm}), there
+  exists a negligible function $\negl$ such that for all sufficiently
+  large $n\in \nats$,
+  \begin{align*}
+    \Pr_{x\sgets \{0,1\}^{n}}[\Inv(\sff(x))\in \sff^{-1}(\sff(x))]\leq \negl(n),
+  \end{align*}
+where the probability is taken over the random choice of $x$ and the
+internal coin flips of $\Inv$.
+\end{itemize}
+
+A wide range of works shows that the existence of one-way functions is
+the minimal assumption needed for cryptography, as most of the following
+primitives can be constructed out of them
+\cite[pp. 181-225]{lindell2007introduction}. 
+
+\subsection*{Hash Functions}
+In the following, we will often use \myDef{keyed functions} $f\colon
+\{0,1\}^{*}\times \{0,1\}^{*}\to \{0,1\}^{*}$. The first parameter of
+$f$ is then called the \emph{key} of the function. To simplify notation,
+for each key $k\in \{0,1\}^{*}$, we define the function $f_{k}\colon
+\{0,1\}^{*}\to \{0,1\}^{*}$ with $f_{k}(x)=f(k,x)$.
+
+A cryptographic primitive typically consists of a keyed function $f$ and
+a \myDef{generator} algorithm $\Gen_{f}$ that upon input $1^{\kappa}$
+produces a suitable key $k$ of sufficient size larger than $\kappa$ for
+$f$. 
+
+A \myDef{hash function} $(\sfh,\Gen_{\sfh})$ is a pair of \acp{PPTM} such that
+$\Gen_{\sfh}$ upon input $1^{\kappa}$ produces a key $k\in \{0,1\}^{*}$
+with $|k|\geq \kappa$. The keyed function $\sfh$ takes the key $k\gets
+\Gen_{\sfh}(1^{\kappa})$ and a string $x\in L(\kappa)$ and produces a
+string $\sfh_{k}(x)$ of length $\ell(\kappa) < L(\kappa)$.
+
+ In order to define the
+"security" of this function, we first need to define a corresponding
+\emph{experiment}. This is a typical approach in cryptography and
+steganography: For a primitive $\Pi$, we define an experiment $E(\Pi)$,
+that takes an "attacker" $A$. Whenever the probability that $A$ passes
+(its \myDef{advantage} $\Adv_{A,\pi}(\kappa)$) 
+is negligible we say that $\Pi$ is secure. 
+
+As it should be hard for an
+adversary to find two different elements $x\neq x'$ such that
+$\sfh_{k}(x)=\sfh_{k}(x')$, we need to find a corresponding experiment. A
+\myDef{collision finder} $\Fi$ for a hash function $(\sfh,\Gen_{\sfh})$
+ is a \ac{PPTM} that upon input 
+$k\in \supp(\Gen_{\sfh}(1^{\kappa}))$ outputs two strings
+$x,x'\in \{0,1\}^{L(\kappa)}$. Its goal is to pass the following
+experiment:
+\myAlgorithm{$\Coll_{\Fi,(\sfh,\Gen_{\sfh})}(\kappa)$}{Hash function $(\sfh,\Gen_{\sfh})$, Finder $\Fi$, key length $\kappa$}{
+\State $k \gets \Gen_{\sfh}(1^{\kappa})$
+\State $(x,x') \gets \Fi(k)$
+\If{$x\neq x'$ and $\sfh_{k}(x)=\sfh_{k}(x')$} 
+   \AlgReturn{1}
+\Else
+ \AlgReturn{0}
+\EndIf
+}{Collision-Finding Experiment}
+
+A hash function $\Pi=(\sfh,\Gen_{\sfh})$ is called
+\myDef{collision resistant}, if for all collision finders $\Fi$, there is a
+negligible function $\negl$ such that
+\begin{align*}
+ \Adv_{\Fi,(\sfh,\Gen_{\sfh})}^{\hash}(\kappa) := \Pr[\Coll_{\Fi,\Pi}(\kappa)=1]\leq \negl(\kappa).
+\end{align*}
+
+As collision resistant hash functions compresses an input of length
+$L(\kappa)$ into a smaller value of length $\ell(\kappa) < L(\kappa)$, they
+are often used to create short signatures of a longer bitstring.
+
+\subsection*{Pseudorandom Functions}
+For two numbers $\ell,\ell'\in \nats$, denote the \myDef{set of all function} from
+$\{0,1\}^{\ell}$ to $\{0,1\}^{\ell'}$ by $\Fun(\ell,\ell')$. Clearly, in order to
+specify a random element of $\Fun(\ell,\ell')$, one needs $2^{\ell}\times \ell'$
+bits and we can thus not use completely random functions in an efficient
+setting. We will thus use efficient functions that are indistinguishable
+from completely random function. A \myDef{\ac{PRF}} $(\sff,\Gen_{\sff})$ is a
+pair of \acp{PPTM} such that $\Gen_{\sff}$ upon input $1^{\kappa}$ produces
+a key $k\in \{0,1\}^{*}$ with $|k|\geq \kappa$. The keyed function $\sff$
+takes the key $k\gets \Gen_{\sff}(1^{\kappa})$ and a string $x\in
+\{0,1\}^{\ell(\kappa)}$ and produces a string $\sff_{k}(x)$ of length
+$\ell'(\kappa)$. An attacker, called \myDef{distinguisher} $\Dist$ upon
+input $1^{\kappa}$ gets
+oracle access to a function that is either completely random or equals
+$\sff_{k}$ for a randomly chosen key $k$ and its goal is to distinguish
+between those cases. Hence, for every distinguisher $\Dist$ there is a
+negligible function $\negl$ such that
+\begin{align*}
+  &\Adv_{\Dist,(\sff,\Gen_{\sff})}^{\prf}(\kappa) :=\\ &\left| \Pr[\Dist^{\sff_{k}}(1^{\kappa})=1] -
+  \Pr[\Dist^{f}(1^{\kappa})]\right| \leq \negl(\kappa),
+\end{align*}
+where $k\gets \Gen_{\sff}(1^{\kappa})$ and $f\gets
+\Fun(\ell(\kappa),\ell'(\kappa))$. 
+
+Furthermore, if
+$\ell(\kappa)=\ell'(\kappa)$ and if every $\sff_{k}$ is a permutation we
+say that the pair $(\sff,\Gen_{\sff})$ is a \myDef{\ac{PRP}}.
+
+Note that due to the definition of \acp{PRF}, they share \emph{all}
+properties of totally random functions that one can test in polynomial
+time (up to a negligible probability). A typical security analysis of a
+protocol that uses \acp{PRF} thus starts with the analysis of the
+protocol if one replaces the \ac{PRF} with a totally random
+function. This modified protocol is then examined with
+probability- or information-theoretic means to conclude something about
+the behaviour of the modified protocol. By replacing the totally
+random function with a \ac{PRF}, one can conclude that the behaviour of
+the modified protocol and the behaviour of the original protocol are
+very similar. This allows one to also use the results of the modified
+protocol for the original protocol. 
+
+
+In the chapters concerned with
+non-efficient steganography, we will drop the requirement that $\sff$ is
+efficient computable and say that such a pair $(\sff,\Gen_{\sff})$ is a
+\myDef{non-efficient \ac{PRF}}. 
+
+
+\subsection*{Signature Schemes}
+A \myDef{signature scheme} $(\Gen,\Sign,\Vrfy)$ is a triple of
+\acp{PPTM} such that the algorithm $\Gen(1^{\kappa})$ produces a pair $(pk,sk)$ of
+keys with $|pk|\geq \kappa$ and $|sk|\geq \kappa$. We call $pk$ a
+\emph{public key} and $sk$ a \emph{secret/private key}. The \myDef{signing
+algorithm} $\Sign$ takes as input the secret key $sk$, a \emph{message}
+$m\in \{0,1\}^{\ell(\kappa)}$ and outputs a \myDef{signature} $\sigma\in
+\{0,1\}^{*}$. The \myDef{verifying algorithm} $\Vrfy$ takes as input the
+public key $pk$, a message $m\in \{0,1\}^{\ell(\kappa)}$ and a signature
+$\sigma\in \{0,1\}^{*}$. It outputs a bit $b$ with $b=1$ iff $\sigma \in
+\supp(\Sign(pk,m))$. We will typically treat $\Sign$ and $\Vrfy$ as
+keyed functions and will thus also write $\Sign_{sk}$ and $\Vrfy_{pk}$
+for the corresponding function, where the key is fixed. A \myDef{forger}
+$\Forg$ is a \ac{PPTM} that upon input $pk$ and oracle access to
+$\Sign_{sk}$ tries to produce a pair $(m,\sigma)$ such that
+$\Vrfy_{pk}(m,\sigma)=1$. Formally, this is defined via the following
+experiment $\Sig-Forge$.
+
+\myAlgorithm{$\Sig-Forge_{\Forg,(\Gen,\Sign,\Vrfy)}(\kappa)$}{Signature
+ Scheme $(\Gen,\Sign,\Vrfy)$, Forger $\Forg$, length $\kappa$}{
+\State $(pk,sk) \gets \Gen(1^{\kappa})$
+\State $(m,\sigma) \gets \Forg^{\Sign_{sk}}(pk)$ 
+\State Let $Q$ be the set of messages given to $\Sign_{sk}$ by $\Forg$
+\If{$m\not\in Q$ and $\Vrfy_{pk}(m,\sigma)=1$}
+   \AlgReturn{1}
+\Else
+ \AlgReturn{0}
+\EndIf
+}{Signature-Forging Experiment}
+
+A signature scheme $(\Gen,\Sign,\Vrfy)$ is called \myDef{existentially
+  unforgeable} if for every forger $\Forg$, there is a negligible
+function $\negl$ such that
+\begin{align*}
+  \Adv^{\sig}_{\Forg,(\Gen,\Sign,\Vrfy)}(\kappa) :=
+  \Pr[\Sig-Forge_{\Forg,\Pi}(\kappa)=1]\leq \negl(\kappa).
+\end{align*}
+
+Note that this definition of security implies that a existentially
+unforgeable signature scheme is \emph{publicly verifiable} and has the
+property of \emph{non-repudiation} \cite{lindell2007introduction}, two
+important aspects that we will also make use of.
+
+\subsection*{Symmetric Encryption Schemes}
+A \myDef{\ac{SES}} $(\Gen, \Enc,\Dec)$ is a triple of
+\acp{PPTM} such that $\Gen(1^{\kappa})$ produces a key
+$k\in \{0,1\}^{*}$ with $|k|\geq \kappa$. The \myDef{encryption
+  algorithm} $\Enc$ takes as input the key $k$ and a \emph{plaintext}
+$m\in \{0,1\}^{\ell(\kappa)}$ and outputs a \emph{ciphertext}
+$c\in \{0,1\}^{*}$. The \myDef{decryption algorithm} $\Dec$ takes as
+input the key $k$ and a ciphertext $c$ and outputs a plaintext
+$m\in \{0,1\}^{\ell(\kappa)}$. In order to make sure that the decryption
+is successful, we assume that there exists a negligible function $\negl$
+such that the probability
+$\Pr[\Dec(k,\Enc(k,m))\neq m]\leq\negl(\kappa)$, with
+$k\gets \Gen(1^{\kappa})$. 
+
+An \myDef{attacker} $(\Att_{1},\Att_{2})$ on
+the encryption scheme is a pair of \acp{PPTM}. In the \emph{first
+  round}, the algorithm $\Att_{1}$ produces upon input of $1^{\kappa}$
+and with oracle access to $\Enc_{k}$ two messages $m_{0},m_{1}\in
+\{0,1\}^{\ell(\kappa)}$. In the \emph{second round}, $\Att_{2}$ is given
+the encryption of $m_{b}$ and should decide whether $b=0$ or
+$b=1$. This security notion is known as security against \acp{CPA}. 
+Formally, this is defined via the following experiment
+$\CPA-Dist$.
+
+\myAlgorithm{$\CPA-Dist_{(\Att_{1},\Att_{2}),(\Gen,\Enc,\Dec)}(\kappa)$}{\ac{SES}
+  $(\Gen,\Enc,\Dec)$, Attacker $(\Att_{1},\Att_{2})$, length $\kappa$}{
+\State $k \gets \Gen(1^{\kappa})$
+\State $(m_{0},m_{1},s)$ \gets $\Att_{1}^{\Enc_{k}}(1^{\kappa})$
+\Comment{$s$ contains \emph{state information}}
+\State $b \sgets \{0,1\}$
+\State $c \gets \Enc_{k}(m_{b})$
+\State $b' \gets \Att_{2}^{\Enc_{k}}(1^{\kappa},c,s)$
+\If{$b=b'$}
+   \AlgReturn{1}
+\Else
+ \AlgReturn{0}
+\EndIf
+}{\acs{CPA}-Experiment}
+
+A \ac{SES} $(\Gen,\Enc,\Dec)$ is \myDef{\acs{CPA}-secure} if for every
+attacker $(\Att_{1},\Att_{2})$, there is a negligible function $\negl$
+such that 
+\begin{align*}
+  &\Adv_{(\Att_{1},\Att_{2}),(\Gen,\Enc,\Dec)}^{\cpa}(\kappa) :=\\
+  &\left|\Pr[\CPA-Dist_{(\Att_{1},\Att_{2}),(\Gen,\Enc,\Dec)}(\kappa)=1]
+    - \frac{1}{2}\right|\leq \negl(\kappa).
+\end{align*}
+
+An even stronger security notion is the notion of security against \acfp{CPA+}, where the
+attacker $\Att_{1}$ outputs a single message $m$ and the string $c$ is either
+$\Enc_{k}(m)$ ($b=0$) or a completely random bitstring of length
+$|\Enc_{k}(m)|$ ($b=1$). The goal of $\Att_{2}$ is to reconstruct the
+bit $b$ from $c$. Denote this modification of $\CPA-Dist$ by
+$\CPAD-Dist$.  Informally, this implies that the ciphertext
+constructed by the \ac{SES} are indistinguishable from random strings. 
+A \acl{SES} $(\Gen,\Enc,\Dec)$ is \myDef{\acs{CPA+}-secure} if for every
+attacker $(\Att_{1},\Att_{2})$, there is a negligible function $\negl$
+such that 
+\begin{align*}
+  &\Adv_{(\Att_{1},\Att_{2}),(\Gen,\Enc,\Dec)}^{\cpad}(\kappa) :=\\
+  &\left|\Pr[\CPAD-Dist_{(\Att_{1},\Att_{2}),(\Gen,\Enc,\Dec)}(\kappa)=1]-\frac{1}{2}\right|\leq
+    \negl(\kappa).
+\end{align*}
+
+Clearly, \acs{CPA+}-security implies \acs{CPA}-security, but the other
+implication is not true: For example, the encryption algorithm $\Enc$
+may always appends a certain string at the end of each
+ciphertext. Fortunately, most known \ac{CPA}-secure \ac{SES} are also
+\ac{CPA+}-secure. 
+
+\subsubsection*{Random Counter Mode}
+We will sometimes use simple, yet incredibly useful \ac{SES} called the
+\myDef{random counter mode}. Let $(\sff,\Gen_{\sff})$ be a \ac{PRF} that maps
+input strings of length $\ell(\kappa)$ into output strings of the same
+length $\ell(\kappa)$. The following algorithms then yields a
+\ac{SES} $(\Gen^{\sff},\Enc^{\sff},\Dec^{\sff})$:
+\begin{itemize}
+\item The generator algorithm $\Gen^{\sff}$ simply uses $\Gen_{\sff}$ to create a
+  symmetric key $k$, \ie $\Gen^{\sff}(1^{\kappa})=\Gen_{\sff}(1^{\kappa})$. 
+\item The encryption algorithm works as follows for messages
+  $m=m_{1}m_{2}\ldots m_{n(\kappa)}$ with $m_{i}\in \{0,1\}^{\ell(\kappa)}$:
+
+\myAlgorithm{$\Enc^{\sff}$}{key $k$, $m=m_{1}m_{2}\ldots m_{n(\kappa)}\in
+  \{0,1\}^{n(\kappa)\cdot \ell(\kappa)}$}{
+\State $\kappa := |k|$
+\State $r \sgets \{0,1\}^{\ell(\kappa)}$ \Comment{$r$ is treated as
+  string \emph{and} number}
+\For{$i=1,\ldots,n(\kappa)$}
+\State $c_{i} := \sff_{k}(r+i \bmod 2^{\ell(\kappa)})\oplus m_{i}$
+\EndFor
+\State \AlgReturn $r,c_{1},c_{2},\ldots,c_{n(\kappa)}$
+}{Random Counter Mode Encryption}
+\item Similarly, the decryption inverts the encryption:
+\myAlgorithm{$\Dec^{\sff}$}{key $k$, $c=c_{0}c_{1}\ldots c_{n(\kappa)}\in
+  \{0,1\}^{(n+1)\cdot \ell(\kappa)}$}{
+\State $\kappa := |k|$
+\State $r := c_{0}$
+\For{$i=1,\ldots,n(\kappa)$}
+\State $m_{i} := \sff_{k}(r+i \bmod 2^{\ell(\kappa)})\oplus c_{i}$
+\EndFor
+\State \AlgReturn $m_{1},m_{2},\ldots,m_{n(\kappa)}$
+}{Random Counter Mode Decryption}
+\end{itemize}
+
+Clearly, every ciphertext $c=\Enc^{\sff}(k,m)$ is decoded correctly. Concerning
+the security, \citeauthor{bellare1997concrete} already proved the
+following theorem in \cite{bellare1997concrete}, where they called this
+construction the \emph{XOR-Scheme}.
+
+\begin{theorem}[Theorem 13 in the full version of \cite{bellare1997concrete}]
+  If the pair $(\sff,\Gen_{\sff})$ is a \acl{PRF}, the \acl{SES}
+  $(\Gen^{\sff},\Enc^{\sff},\Dec^{\sff})$ is \ac{CPA+}-secure.
+\end{theorem}
+
+\subsection*{Public-Key Encryption Schemes}
+While \acp{SES} are very useful, the problem of the key management
+remains complicated. If $n$ parties want to communicate via a \ac{SES},
+each pair $i,j\in \{1,\ldots,n\}$ needs to share a key $k_{i,j}$. Hence,
+$\binom{n}{2}$ keys are needed if every party wants to communicate with
+every other party. And furthermore, those $\binom{n}{2}$ somehow need to
+be exchanged over a secure communication channel before the actual
+communication may take part. In order to remedy these problems,
+\citeauthor{diffie1976publickey} introduced the notion of
+\emph{public-key cryptography} in their groundbreaking work
+\cite{diffie1976publickey}. 
+
+A \myDef{\ac{PKES}} $(\Gen,\PKEnc,\PKDec)$ is a triple of \acp{PPTM}
+such that $\Gen(1^{\kappa})$ produces a pair of keys $(\pk,\sk)$ with
+$|\pk|\geq \kappa$ and $|\sk|\geq \kappa$. The key $\pk$ is called the
+\myDef{public key} and the key $\sk$ is called the \myDef{secret key}
+(or \emph{private key}). While $\pk$ will be publicly available to all
+parties, the secret key $\sk$ must be kept private by its owner. The
+\myDef{public-key encryption algorithm} $\PKEnc$ takes as input the
+public key $\pk$ and a plaintext $m\in \{0,1\}^{\ell(\kappa)}$ and
+outputs a ciphertext $c\in \{0,1\}^{*}$. The \myDef{public-key decryption
+  algorithm} $\PKDec$ takes as input the secret key $\sk$ and the
+ciphertext $c$ and produces a plaintext $m\in
+\{0,1\}^{\ell(\kappa)}$. In order to make sure that the decryption
+is successful, we assume that there exists a negligible function $\negl$
+such that the probability
+$\Pr[\PKDec(\sk,\PKEnc(\pk,m))\neq m]\leq\negl(\kappa)$, with
+$(\pk,\sk)\gets \Gen(1^{\kappa})$. 
+
+While an attacker against a \ac{SES} was given oracle access to the
+encryption algorithm, this is not needed in the public-key setting:
+Everyone knows the public key $\pk$ needed to encrypt messages. On the
+other hand, research has shown that the security requirements for
+\acp{PKES} are much higher. Informally, we will allow an attacker to
+first choose a message that should be encrypted. In the next step, the
+attacker is allowed to insert arbitrary ciphertexts into the
+communication and watch Bob's behaviour upon receiving those
+texts. Formally we equip an attacker with a
+\emph{decryption oracle} in order to perform this kind of attack. 
+
+An \myDef{public-key attacker}
+$(\Att_{1},\Att_{2})$ on the \ac{PKES} is a pair of \acp{PPTM}. In the
+\emph{first round}, the algorithm $\Att_{1}$ produces upon input $\pk$
+and with oracle access to $\PKDec_{\sk}$ two messages $m_{0},m_{1}\in
+\{0,1\}^{\ell(\kappa)}$. A random bit $b\sgets \{0,1\}$ is then chosen
+and in the \emph{second round}, $\Att_{2}$ is given
+the encryption $c$ of $m_{b}$ and should decide whether $b=0$ or
+$b=1$. While we still allow $\Att_{2}$ to have oracle access to the
+decoding algorithm $\PKDec_{\sk}$, clearly we must forbid that it
+uses it to decrypt $c$. 
+This security notion is known as security
+against \acp{CCA}. Formally, this is defined via the following experiment
+$\CCA-Dist$.
+
+
+\myAlgorithm{$\CCA-Dist_{(\Att_{1},\Att_{2}),(\Gen,\PKEnc,\PKDec)}(\kappa)$}{\ac{PKES}
+  $(\Gen,\PKEnc,\PKDec)$, Attacker $(\Att_{1},\Att_{2})$, length $\kappa$}{
+\State $(\pk,\sk) \gets \Gen(1^{\kappa})$
+\State $(m_{0},m_{1},s)$ \gets $\Att_{1}^{\PKDec_{\sk}}(\pk)$
+\Comment{$s$ contains \emph{state information}}
+\State $b \sgets \{0,1\}$
+\State $c \gets \PKEnc_{\pk}(m_{b})$
+\State $b' \gets \Att_{2}^{\PKDec_{\sk}}(pk,c,s)$
+\If{$\Att_{2}$ queries $\PKDec_{\sk}(c)$ or $b\neq b'$}
+ \AlgReturn{0}
+\Else
+   \AlgReturn{1}
+\EndIf
+}{\acs{CCA}-Experiment}
+
+A \ac{PKES} $(\Gen,\PKEnc,\PKDec)$ is called \myDef{\acs{CCA}-secure}, if for
+every attacker $(\Att_{1},\Att_{2})$, there is a negligible function
+$\negl$ such that
+\begin{align*}
+  &\Adv_{(\Att_{1},\Att_{2}),(\Gen,\PKEnc,\PKDec)}^{\cca}(\kappa) :=\\
+  &\left|\Pr[\CCA-Dist_{(\Att_{1},\Att_{2}),(\Gen,\PKEnc,\PKDec)}(\kappa)=1]
+    - \frac{1}{2}\right|\leq \negl(\kappa).
+\end{align*}
+
+As in the symmetric key, this notion of security can also be
+strengthened to security against \acfp{CCA+}, where the attacker needs
+to distinguish the ciphertext of a chosen message ($b=0$) from a
+completely random bitstring ($b=1$) of corresponding length
+$|\PKEnc_{\pk}(m)|$. Denote this modification of $\CCA-Dist$ by
+$\CCAD-Dist$. This
+implies that the output of the \ac{PKES} is indistinguishable from
+random strings. A \ac{PKES} $(\Gen,\PKEnc,\PKDec)$ is
+\myDef{\acs{CCA+}-secure} if for every attacker $(\Att_{1},\Att_{2})$,
+there is a negligible function $\negl$ such that
+\begin{align*}
+  &\Adv_{(\Att_{1},\Att_{2}),(\Gen,\PKEnc,\PKDec)}^{\ccad}(\kappa) :=\\
+  &\left|\Pr[\CCAD-Dist_{(\Att_{1},\Att_{2}),(\Gen,\PKEnc,\PKDec)}(\kappa)=1]-\frac{1}{2}\right|\leq
+    \negl(\kappa).
+\end{align*}
+
+
+
+
+%%% Local Variables:
+%%% TeX-master: "../main"
+%%% End:

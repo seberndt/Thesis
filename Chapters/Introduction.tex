@@ -1,0 +1,18 @@
+\chapter{Introduction}
+\myAlgorithm{$SE^{cC}(k,m,h)$}{key $k$, message $m$, history $h$}{
+\State $s$ = $\varnothing$\Comment{initialize the empty state}
+ \For{$i=1,2,\ldots,\ell(\kappa)$}
+ \State $(d_{i},s)$ $\leftarrow$ $SE^{cC_{h,nn(\kappa)}}(k,m,h,s)$
+ \State $h := h|| d_{i}$
+ \EndFor
+ \State \textbf{return} $d_{1},d_{2},\ldots,d_{\ell(\kappa)}$
+}{The run of a stegosystem}
+
+We define a \myDef{bad value} as 
+
+\begin{align*}
+  aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+\end{align*}
+%%% Local Variables:
+%%% TeX-master: "../main"
+%%% End:

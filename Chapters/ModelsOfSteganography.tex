@@ -1,0 +1,178 @@
+\chapter{Models of Steganography}
+After the previous chapter introduced all necessary notions concerning
+cryptography, this chapter deal with the formal definitions of
+\emph{provably secure steganography}. Throughout this thesis, we will
+use multiple different models of steganography, that mainly differ in
+three aspects:
+\begin{description}
+\item[Efficiency:] The first formal definition of provably secure
+  steganography was given by \citeauthor{hopper2009provably} in
+  \cite{hopper2009provably}, the running time of a stegosystem was
+  not necessarily efficient, \ie not bounded by a polynomial in the
+  security parameter $\kappa$. While some subsequent works defined
+  efficiency as a requirement (see \eg \cite{backes2005active,
+    dedic2009lower}), \citeauthor{hopper2009provably} make use of the
+  fact that their stegosystems may run for a long time to obtain their
+  results. We thus distinguish between the original definition -- which
+  we will call \myDefInformal{non-efficient stegosystems} -- and the
+  updated notion \myDefInformal{efficient stegosystems}. 
+\item[Applicability:] A typical problem that arises when one designs a stegosystem
+  concerns their \emph{applicability}: On which kind of channels should
+  or stegosystem work? One could for example design a stegosystem that
+  works for a concrete channel where the documents are $200$ \acs{JPEG}
+  pictures of size $600\times 600$ pixels that we know in
+  beforehand. \myNote{This nomenclature is taken from
+    \cite{liskiewicz2013grey}.}
+Such a stegosystem is called a \myDefInformal{white-box
+    stegosystem}, as the stegosystem has complete knowledge of the
+  channel. Typically one wants to design more general stegosystems. For
+  example, it might be appropriate to design a stegosystem that works
+  for all channels that contain \acs{JPEG} pictures of size $600\times
+  600$ pixels. As the stegosystem still has some knowledge about the
+  documents, such a system is called a \myDefInformal{grey-box
+    stegosystem}. The most general form of a stegosystem is a
+  stegosystem that works \emph{on every channel} (containing
+  sufficiently many documents). We call such a system a
+  \myDefInformal{universal stegosystem} or a \myDefInformal{black-box
+    stegosystem}. As we try to give as general results as possible in
+  this thesis, we will develop grey-box or black-box stegosystems for
+  our positive results and rule out white-box stegosystems for our
+  negative results.
+\item[Key-Symmetry:] As in the cryptographic setting, the stegoencoder
+  needs a key $k$ to encode the message into the channel  and the
+  stegodecoder also needs a key $k'$. If $k=k'$ we speak of a
+  \myDefInformal{symmetric-key stegosystem} or \myDefInformal{secret-key
+    stegosystem}. In contrast, if $k\neq k'$ and $k$ is publicly known
+  and $k'$ is kept secret, we call such a system a
+  \myDefInformal{public-key stegosystem}. Furthermore, we denote the
+  publicly known key $k$ as $\pk$ (for public key) and the secret key
+  $k'$ as $\sk$ (for secret key). Depending on the setting we will also
+  analyze different security notions. 
+\end{description}
+
+To help the reader to keep track which of these $2\cdot 3\cdot 2=12$
+configurations we currently use, the names of the chapters typically
+contain all information about the notions used in the chapter. We will
+also always give a short description about these aspects in the first
+few sentences of the chapter.
+
+\section{Unsuspicious Communication}
+In order to formalize that the output of a secure stegosystem is
+indistinguishable from unsuspicious communication, we first need a mean
+to define this unsuspicious communication. We will do this via the
+notion of a \emph{channel}. We will think of this unsuspicious
+communication as the unidirectional transmission of \emph{documents}
+from Alice to Bob and will model this as a probability distribution upon
+those documents. This distribution indicates the probability that Alice
+sends a certain document to Bob. There are two more things we need to
+consider to make this model realistic and useful for us. First, the
+probabilities may change over the time depending on the already sent
+documents. If Alice sends Bob a postcard from the beach, it is quite
+unlikely (though not impossible) that the next postcard that Bobs get
+will come from the Antarctic. This change of the probability
+distribution will be reflected by something we call the \emph{history}
+-- the sequence of already transmitted documents. Second, larger
+security parameters typically allow us to send larger messages. Hence,
+the amount of information needed to hide those messages also grows. 
+To hide those messages, there are to approaches to handle the need for
+more information:
+\begin{itemize}
+\item In the first approach used by \citeauthor{hopper2009provably} in
+  \cite{hopper2009provably}, it is assumed that the size of the
+  documents is independent from the security parameter and thus treated
+  as a constant. In order to have a large enough entropy to handle
+  larger messages, \citeauthor{hopper2009provably} do not deal with
+  single documents, but rather with sequences of documents of sufficient
+  length. This model was critized by
+  \citeauthor{lysyanskaya2006imperfect} in
+  \cite{lysyanskaya2006imperfect} as one should only be able to look at
+  the distribution with history $h$ containing the document $d$
+  \emph{after} the document $d$ was transmitted to Bob especially if the
+  the size of documents is very small.
+\item In the second approach that we will use, we assume that the size
+  of the document depends on the security parameter, \ie the entropy of
+  a single document is high enough already. This approach is more
+  general then the first one as we will simply interpret a sequence of
+  constant-sized objects as a single document. This simplifies the
+  analysis and our notation as we can always directly talk about
+  documents and not about sequences.
+\end{itemize}
+
+\begin{example}
+  Let us look at the example that Alice send Bob pictures from her
+  holiday. Suppose that every picture is encoded in \acs{JPEG} and of
+  size $600\times 600$ pixels. Denote the set of all such pictures by
+  $\Pics$. Furthermore suppose that on security
+  parameter $\kappa$, we want to embed messages of length $m(\kappa)$. 
+
+  In the first approach, a document $d$ would consist of a \emph{single}
+  picture, \ie $d\in \Pics$ and we would only deal with sequences of
+  pictures of length $\approx m(\kappa)$. Hence, our channel would be a
+  probability distribution on $\Pics$, but our stegosystem would only
+  deal with sequences taken from this distribution.
+
+  In the second approach, a document $d$ would already consists of sequence
+  of pictures, \ie $d\in \Pics^{m(\kappa)}$. Hence, our channel would be a
+  probability distribution on $\Pics^{m(\kappa)}$ and our stegosystem would
+  also directly deal with elements of this distribution. 
+\end{example}
+
+Formally, a \myDef{channel} $\chan$ on the alphabet $\Sigma$ is a
+function that maps an element $h\in \Sigma^{*}$ -- the \myDef{history}
+-- and a number $n\in \nats$ -- the \myDef{document length} -- to a
+probability distribution on $\Sigma^{n}$. We will denote this
+probability distribution by $\chan_{h,n}$ instead of
+$\chan(h,n)$. Typically, we will implicitly assume that
+$\Sigma=\{0,1\}$ to simplify the following analysis concerning the
+amount of information that is present in the channel $\chan$. The
+\myDef{min-entropy of a channel} $\minent(\chan,n)$ for
+a channel $\chan$ and a natural number $n\in \nats$ is defined as
+$\minent(\chan,n) = \min_{h\in \Sigma^{*}}\{\minent(\chan_{h,n})\}$. As
+demonstrated in \cite{hopper2009provably}, the number of bits embeddable
+in a \emph{single document} is bounded by $\minent(\chan,n)$. 
+
+\section{Stegosystems}
+We are now able to finally describe the notion of a stegosystem. As
+discussed in the beginning of the section, we will follow the definition
+of \cite{hopper2009provably} and will not assume that a stegosystem
+needs to run in polynomial time. In order to reduce the redundancy of
+this work, we will only define secret-key stegosystems and then
+explain the (relatively minor) differences to public-key systems later
+on. Let $\mu,n$ and $\ell$ be polynomials throughout this chapter that
+will model that the stegoencoder upon security parameter $\kappa$ takes
+a message of length $\mu(\kappa)$ and embedds it into $\ell(\kappa)$
+documents of length $n(\kappa)$. We thus call $\mu$ the \myDef{message
+  length}, $n$ the \myDef{document length} and $\ell$ the \myDef{output
+  length} of the stegosystem. 
+
+
+A \myDef{stegosystem}
+$(\Gen,\SEnc,\SDec)$ is a triple of \acp{PTM} such that the algorithm
+$\Gen(1^{\kappa})$ produces a key $k\in \{0,1\}^{*}$ with $|k|\geq
+\kappa$. The \myDef{stegoencoder} $\SEnc$ takes as input the key $k$, a
+message $m\in \{0,1\}^{\mu(\kappa)}$, a history $h\in
+\left(\Sigma^{n(\kappa)}\right)^{*}$ and some state informations $s\in
+\{0,1\}^{*}$ and outputs a \emph{single document} $d\in
+\Sigma^{n(\kappa)}$ and updated state information $s'\in
+\{0,1\}^{*}$. Its goal is to embed a piece of $m$ into the document
+$d$. It will also have access to samples of the probability distribution
+$\chan_{h,n(\kappa)}$. The complete output of the run of the
+stegoencoder is denoted by $\SEnc^{\chan}(k,m,h)$ and defined by the
+following scheme:
+\myAlgorithm{$\SEnc^{\chan}(k,m,h)$}{Key $k$, message $m$, history $h$}{
+\State $s := \varnothing$ \Comment{initialize the empty state}
+\For{$i=1,2,\ldots,\ell(\kappa)$}
+\State $(d_{i},s) \gets \SEnc^{\chan_{h,n(\kappa)}}(k,m,h,s)$
+\State $h := h\mid\mid d_{i}$
+\EndFor
+\State \AlgReturn{$d_{1},d_{2},\ldots,d_{\ell(\kappa)}$}
+}{Complete run of stegoencoder $\SEnc$}
+
+
+
+\section{Security Notions}
+
+%%% Local Variables:
+%%% TeX-master: "../main"
+%%% End:
+

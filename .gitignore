@@ -1,0 +1,12 @@
+*.aux
+*.lo*
+*.nav
+*.bbl
+*.toc
+*.blg
+*.fls
+*.idx
+*.ilg
+*.ind
+*.out
+*.fdb*
