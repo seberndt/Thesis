@@ -33,7 +33,7 @@ zero. This set is called the \myDef{support} of $\Pr$ and we denote it
 by $\supp(\Pr)=\{\omega\in \dom(\Pr)\mid \Pr(\omega) > 0\}$. The
 \myDef{min-entropy} measures the amount of randomness of a probability
 distribution $\Pr$ and is defined as
-$\minent(\Pr)=\min_{\omega\in \supp(\Pr)}\{-\log \Pr(\omega)\}$. For two
+$\minent(\Pr)=\inf_{\omega\in \supp(\Pr)}\{-\log \Pr(\omega)\}$. For two
 events $A$ and $B$, the \myDef{conditional probability} that $A$ occurs
 given that $B$ occurs is defined as
 $\Pr(A\mid B) := \frac{\Pr(A\cap B)}{\Pr(B)}$. We say that $A$ and $B$
@@ -53,17 +53,24 @@ are \myDef{independent events}, if $\Pr(A\mid B)=\Pr(A)$.
     with \examplesymbol}
 \end{example}
 
-It is often convenient to assign numerical values to the elementary
+It is often convenient to assign certain values from a set $S$ to the elementary
 events. This is formally described by the notion of a
-(real-valued) \myDef{random variable}, which is a mapping from $\Omega$
-to $\reals$. If $\Pr$ is a probability distribution on $\Omega$ and $X\colon
-\Omega\to \reals$ is a random variable, we define $\Pr[X=x] :=
-\Pr(X^{-1}(x))$ as the probability that $X$ gets the value $x$. To
-measure the expected outcome of a random variable $X$, we define the
-\myDef{expected value} of $X$ as $\Exp[X] := \sum_{x\in X(\Omega)}x\cdot
-\Pr[X=x]$. Two random variables $X$ and $Y$ are \myDef{independent
-  random variables}, if $X^{-1}(x)$ and $Y^{-1}(y)$ are independent
-events for all $x\in \img(X)$ and all $y\in \img(Y)$. 
+$S$-valued \myDef{random variable}, which is a mapping from $\Omega$
+to $S$. If $\Pr$ is a probability distribution on $\Omega$ and $X\colon
+\Omega\to S$ is a random variable, we define $\Pr[X=x] :=
+\Pr(X^{-1}(x))$ as the probability that $X$ gets the value $x$. Most of
+the time, the probability space that we use is clear from the
+context. If it is not clear or if we want to remark the reader that a
+certain value $y$ is chosen at random, we will denote this as $\Pr_{y}$
+or write it down explicitly.
+
+
+To measure the expected outcome of a real-valued random variable
+$X\colon \Omega\to \reals$, we define the \myDef{expected value} of $X$
+as $\Exp[X] := \sum_{x\in X(\Omega)}x\cdot \Pr[X=x]$. Two random
+variables $X$ and $Y$ are \myDef{independent random variables}, if
+$X^{-1}(x)$ and $Y^{-1}(y)$ are independent events for all
+$x\in \img(X)$ and all $y\in \img(Y)$.
 \begin{example}
   Continuing the previous example, the canonical random variable $X$
   would assign $X(\epsdice{1})=1$, $X(\epsdice{2})=2$ and so on. But we
@@ -131,6 +138,11 @@ $\nats$ with probability $\Pr[X=k]=\frac{\exp(-\mu)\cdot \mu^{k}}{k!}$. These ra
 variable can be used to analyze a variety of \emph{balls into bin}
 experiments relatively easy and we will make use of them later on. 
 
+If $P$ and $Q$ are probability distributions upon a common ground set
+$\Omega$, their \myDef{statistical distance} $D_{S}(P,Q)$ is defined as
+\begin{align*}
+  D_{S}(P,Q) := \sum_{x\in \Omega}| P(\{x\}) - Q(\{x\})|.
+\end{align*}
 
 
 \section{Algorithms}
@@ -143,11 +155,24 @@ called \myDef{\ac{PTM}}. We will use the
 terms \ac{PTM} and algorithm interchangeably.  The output of such a
 machine is thus a random variable upon the probability space
 $\{0,1\}^{k}$, where $k$ is the maximum number of coin flips performed
-by the machine. Similarly, the \myDef{running time} of a \ac{PTM} is defined
-as the expected number of steps that the machine performs and is a
-function of the length of its input. If the running time of a \ac{PTM} $\machine$ is
-bounded by a polynomial, we say that $\machine$ is a \myDef{\ac{PPTM}} or an
-efficient algorithm.
+by the machine. If $\machine$ is a \ac{PTM}, we write $\machine(x)$ for
+the random variable that describes the output of $\machine$ on input
+$x$. If $\machine$ uses at most $\rho(x)$ coin flips on input $x$ and
+$\vec{r}\in \{0,1\}^{\rho(x)}$ is a vector describing those coin-flips,
+we write $\machine(x; \vec{r})$ for the (deterministic) output of $\machine$
+on input $x$ if we replace the result of the random coin flips by
+$\vec{r}$. The \emph{running time} of $\machine$ on input $x$ with random
+coins $\vec{r}$ -- the number of steps the machine performs -- is denoted by
+$T_{\machine}(x,\vec{r})$. Similarly, the (worst-case expected) \myDef{running
+  time} $T_{\machine}(n)$ of a \ac{PTM} $\machine$ is defined
+as the expected number of steps that the machine performs, \ie
+\begin{align*}
+  T_{\machine}(n) := \max_{x\in \{0,1\}^{n}}\{\Exp_{\vec{r}}[T_{\machine}(x,\vec{r})]\},
+\end{align*}
+where the expected value is taken over the random choices of the coin
+flips $\vec{r}$ and \emph{not} over some distribution on $x$. If the running time of
+a \ac{PTM} $\machine$ is bounded by a polynomial, we say that $\machine$
+is a \myDef{\ac{PPTM}} or an efficient algorithm. 
 
 Often, the machine $\machine$ will also be equipped with different
 \myDef{oracles}, that allow us to increase the abilities of $\machine$. See the
@@ -165,7 +190,7 @@ next section for examples of this.
 \end{itemize}
 If $\machine$ can access several oracles $O_{1},O_{2},\ldots$, we write
 $\machine^{O_{1},O_{2},\ldots}$. If an algorithm $\machine$ gets a sample $x$
-distributed according to the random variable $X$, we denotes this as
+distributed according to the random variable $X$, we denote this as
 $x\gets X$ and $x\gets \machine$ for the output of the randomized
 algorithm. If $\machine$ is not randomized, i.e. it can only output a
 single value for fixed inputs, we denote this by $x := \machine$ to
@@ -179,15 +204,16 @@ $\machine$ that gets no input such that the output distribution of
 $\Pr$ and $\machine$ is the same. A sequence of probability
 distributions $\Pr_{1},\Pr_{2},\ldots$ will also be denoted as
 $\{\Pr_{n}\}_{n\in \nats}$ and is called an \myDef{distribution ensemble}. A
-distribution ensemble $\{\Pr_{n}\}_{n\in \nats}$ is called an \myDef{efficiently
-  sampleable ensemble}, if there is a \ac{PPTM} $\machine$ such that
-its upon the unary encoding of a number $n$ -- denoted by $1^{n}$ -- is
-the same as $\Pr_{n}$, \ie $\machine(1^{n})=\Pr_{n}$. 
-Similarly, a function $f\colon U\to V$ is \myDef{efficiently
-  computable}, if there is a \ac{PPTM} $\machine$ such that
+% distribution ensemble $\{\Pr_{n}\}_{n\in \nats}$ is called an \myDef{efficiently
+%   sampleable ensemble}, if there is a \ac{PPTM} $\machine$ such that
+% its upon the unary encoding of a number $n$ -- denoted by $1^{n}$ -- is
+% the same as $\Pr_{n}$, \ie $\machine(1^{n})=\Pr_{n}$.
+Similarly, a function $f\colon U\to V$ is a \myDef{efficiently
+  computable function}, if there is a \ac{PPTM} $\machine$ such that
 $\machine(u)=f(u)$ for all $u\in U$. 
 
 \section{Cryptographic Primitives}
+\label{sec:primitives}
 We will make use of a wide range of cryptographic primitives ranging
 from \emph{one-way functions} to \emph{public-key cryptosystems}. Most
 of the definitions are taken from or inspired by the excellent textbook
@@ -240,21 +266,83 @@ concrete approach in steganography see \eg
 \cite{berndt2016pattern}. Throughout this chapter, let $\ell$, $\ell'$
 and $L$ be polynomials.
 
+\subsection*{Indistinguishability}
+A main idea behind several cryptographic primitives is the notion of
+\myDef{indistinguishability} of two objects $O$ and $O'$. We say that
+$O$ and $O'$ are indistinguishable, if no \ac{PPTM} can distinguish
+them. Note that $O$ and $O'$ may differ significantly, but only with
+respect to non-polynomial properties. In the following, we look at a
+simple example: The indistinguishability of two distribution ensembles. 
+
+Let $P=\{P_{\kappa}\}_{\kappa\in \nats}$ and
+$Q=\{Q_{\kappa}\}_{\kappa\in \nats}$ be two distribution ensembles. 
+
+For a \ac{PPTM} $\DDist$ (the \myDef{distribution distinguisher}), the
+\emph{advantage of $\DDist$ to distinguish $P$ and $Q$} is defined as
+\begin{align*}
+\Adv^{\dist}_{\DDist,P,Q}(\kappa)=\left|\Pr[\DDist^{P_{\kappa}}(1^{\kappa})=1]-\Pr[\DDist^{Q_{\kappa}}(1^{\kappa})=1]\right|,
+\end{align*}
+where $\DDist^{D}$ has the ability to get samples distributed accordingly to
+$D$ in unit time. The insecurity of $P$ and $Q$ is defined as
+\begin{align*}
+   \InSec_{P,Q}^{\dist}(\kappa) = \max_{\DDist}\{\Adv_{\DDist,P,Q}^{\dist}(\kappa)\}.
+\end{align*}
+
+To give a more fine-grained security analysis, we also a more refined
+version of $\InSec_{P,Q}^{\dist}(\kappa)$. For two polynomials $q$ and
+$t$, we denote by 
+\begin{align*}
+   \InSec_{P,Q}^{\dist}(q,t,\kappa) = \max_{\DDist}\{\Adv_{\DDist,P,Q}^{\dist}(\kappa)\},
+\end{align*}
+where the maximum is taken over all distribution distinguisher that run
+in time $t(\kappa)$ and make at most $q(\kappa)$ queries to their
+distribution oracle. 
+
+
+
+ In order to simplify our notation, we sometimes
+identify a set $M$ with the uniform distribution on $M$. If $M$ and $N$
+are two finite sets, we hence write
+$ \DDist^{M},\DDist^{N}, \Adv^{\dist}_{\DDist,M,N},$ and $\InSec_{M,N}^{\dist}$ with the
+meaning that $M$ and $N$ are uniformly distributed. Similarly, if
+$F\colon M\to N$ is a function, we write $F(M)$ for the distribution on $N$
+that arises, if the argument to $F$ is chosen uniformly from $M$. 
+
+By the following well-known theorem (see
+\eg~\cite[p.173]{goldreich2004foundations}) we get that the statistical
+distance is a stronger measure than the computational
+indistinguishability.
+
+
+\begin{theorem}
+\label{thm:statistically}
+Let $\{P_{\kappa}\}_{\kappa\in \mathbb{N}}$ and
+$\{Q_{\kappa}\}_{\kappa\in \mathbb{N}}$ be two distribution ensemblöes
+ensembles on the same domains.
+Then it holds that for all sufficiently large $\kappa$:
+\begin{align*}
+ \InSec^{\dist}_{P,Q}(q,t,\kappa)\leq q(\kappa)\cdot D_{S}(P_{\kappa},Q_{\kappa}).
+\end{align*}
+\end{theorem}
+
+
+
+
 \subsection*{One-Way Functions}
-A function $\sff\colon \{0,1\}^{*}\to \{0,1\}^{*}$ is called a
+A function $\algf\colon \{0,1\}^{*}\to \{0,1\}^{*}$ is called a
 \myDef{one-way function}, if the following properties hold:
 \begin{itemize}
 \item For all $n\in
-  \nats$ and all $x\in \{0,1\}^{n}$, we have $\ell(n)\leq |\sff(x)|\leq
+  \nats$ and all $x\in \{0,1\}^{n}$, we have $\ell(n)\leq |\algf(x)|\leq
   \ell'(n)$. 
-\item The function $\sff$ is efficiently computable.
+\item The function $\algf$ is efficiently computable.
 \item For every \ac{PPTM} $\Inv$ (the \emph{inverting algorithm}), there
   exists a negligible function $\negl$ such that for all sufficiently
   large $n\in \nats$,
   \begin{align*}
-    \Pr_{x\sgets \{0,1\}^{n}}[\Inv(\sff(x))\in \sff^{-1}(\sff(x))]\leq \negl(n),
+    \Pr[\Inv(\algf(x))\in \algf^{-1}(\algf(x))]\leq \negl(n),
   \end{align*}
-where the probability is taken over the random choice of $x$ and the
+where the probability is taken over the random choice of $x\sgets \{0,1\}^{n}$ and the
 internal coin flips of $\Inv$.
 \end{itemize}
 
@@ -272,14 +360,16 @@ for each key $k\in \{0,1\}^{*}$, we define the function $f_{k}\colon
 
 A cryptographic primitive typically consists of a keyed function $f$ and
 a \myDef{generator} algorithm $\Gen_{f}$ that upon input $1^{\kappa}$
-produces a suitable key $k$ of sufficient size larger than $\kappa$ for
-$f$. 
+produces a suitable key $k$ of size $\kappa$ for
+$f$. It might be useful for practical purposes to allow $\Gen_{f}$ to
+output keys that are longer than $\kappa$, but we can safely ignore this
+issue in this thesis.
 
-A \myDef{hash function} $(\sfh,\Gen_{\sfh})$ is a pair of \acp{PPTM} such that
-$\Gen_{\sfh}$ upon input $1^{\kappa}$ produces a key $k\in \{0,1\}^{*}$
-with $|k|\geq \kappa$. The keyed function $\sfh$ takes the key $k\gets
-\Gen_{\sfh}(1^{\kappa})$ and a string $x\in L(\kappa)$ and produces a
-string $\sfh_{k}(x)$ of length $\ell(\kappa) < L(\kappa)$.
+A \myDef{hash function} $(\algh,\Gen_{\algh})$ is a pair of \acp{PPTM} such that
+$\Gen_{\algh}$ upon input $1^{\kappa}$ produces a key $k\in
+\{0,1\}^{\kappa}$. The keyed function $\algh$ takes the key $k\gets
+\Gen_{\algh}(1^{\kappa})$ and a string $x\in L(\kappa)$ and produces a
+string $\algh_{k}(x)$ of length $\ell(\kappa) < L(\kappa)$.
 
  In order to define the
 "security" of this function, we first need to define a corresponding
@@ -291,27 +381,27 @@ is negligible we say that $\Pi$ is secure.
 
 As it should be hard for an
 adversary to find two different elements $x\neq x'$ such that
-$\sfh_{k}(x)=\sfh_{k}(x')$, we need to find a corresponding experiment. A
-\myDef{collision finder} $\Fi$ for a hash function $(\sfh,\Gen_{\sfh})$
+$\algh_{k}(x)=\algh_{k}(x')$, we need to find a corresponding experiment. A
+\myDef{collision finder} $\Fi$ for a hash function $(\algh,\Gen_{\algh})$
  is a \ac{PPTM} that upon input 
-$k\in \supp(\Gen_{\sfh}(1^{\kappa}))$ outputs two strings
+$k\in \supp(\Gen_{\algh}(1^{\kappa}))$ outputs two strings
 $x,x'\in \{0,1\}^{L(\kappa)}$. Its goal is to pass the following
 experiment:
-\myAlgorithm{$\Coll_{\Fi,(\sfh,\Gen_{\sfh})}(\kappa)$}{Hash function $(\sfh,\Gen_{\sfh})$, Finder $\Fi$, key length $\kappa$}{
-\State $k \gets \Gen_{\sfh}(1^{\kappa})$
+\myAlgorithm{$\Coll_{\Fi,(\algh,\Gen_{\algh})}(\kappa)$}{Hash function $(\algh,\Gen_{\algh})$, Finder $\Fi$, key length $\kappa$}{
+\State $k \gets \Gen_{\algh}(1^{\kappa})$
 \State $(x,x') \gets \Fi(k)$
-\If{$x\neq x'$ and $\sfh_{k}(x)=\sfh_{k}(x')$} 
+\If{$x\neq x'$ and $\algh_{k}(x)=\algh_{k}(x')$} 
    \AlgReturn{1}
 \Else
  \AlgReturn{0}
 \EndIf
 }{Collision-Finding Experiment}
 
-A hash function $\Pi=(\sfh,\Gen_{\sfh})$ is called
+A hash function $\Pi=(\algh,\Gen_{\algh})$ is called
 \myDef{collision resistant}, if for all collision finders $\Fi$, there is a
 negligible function $\negl$ such that
 \begin{align*}
- \Adv_{\Fi,(\sfh,\Gen_{\sfh})}^{\hash}(\kappa) := \Pr[\Coll_{\Fi,\Pi}(\kappa)=1]\leq \negl(\kappa).
+ \Adv_{\Fi,(\algh,\Gen_{\algh})}^{\hash}(\kappa) := \Pr[\Coll_{\Fi,\Pi}(\kappa)=1]\leq \negl(\kappa).
 \end{align*}
 
 As collision resistant hash functions compresses an input of length
@@ -324,27 +414,43 @@ $\{0,1\}^{\ell}$ to $\{0,1\}^{\ell'}$ by $\Fun(\ell,\ell')$. Clearly, in order t
 specify a random element of $\Fun(\ell,\ell')$, one needs $2^{\ell}\times \ell'$
 bits and we can thus not use completely random functions in an efficient
 setting. We will thus use efficient functions that are indistinguishable
-from completely random function. A \myDef{\ac{PRF}} $(\sff,\Gen_{\sff})$ is a
-pair of \acp{PPTM} such that $\Gen_{\sff}$ upon input $1^{\kappa}$ produces
-a key $k\in \{0,1\}^{*}$ with $|k|\geq \kappa$. The keyed function $\sff$
-takes the key $k\gets \Gen_{\sff}(1^{\kappa})$ and a string $x\in
-\{0,1\}^{\ell(\kappa)}$ and produces a string $\sff_{k}(x)$ of length
-$\ell'(\kappa)$. An attacker, called \myDef{distinguisher} $\Dist$ upon
+from completely random function. A \myDef{\ac{PRF}} $(\algf,\Gen_{\algf})$ is a
+pair of \acp{PPTM} such that $\Gen_{\algf}$ upon input $1^{\kappa}$ produces
+a key $k\in \{0,1\}^{\kappa}$. The keyed function $\algf$
+takes the key $k\gets \Gen_{\algf}(1^{\kappa})$ and a bitstring $x$ of
+length $\fin_{\algf}(\kappa)$ and produces a string $\algf_{k}(x)$ of length
+$\fout_{\algf}(\kappa)$. An attacker, called \myDef{distinguisher} $\Dist$ upon
 input $1^{\kappa}$ gets
 oracle access to a function that is either completely random or equals
-$\sff_{k}$ for a randomly chosen key $k$ and its goal is to distinguish
+$\algf_{k}$ for a randomly chosen key $k$ and its goal is to distinguish
 between those cases. Hence, for every distinguisher $\Dist$ there is a
 negligible function $\negl$ such that
 \begin{align*}
-  &\Adv_{\Dist,(\sff,\Gen_{\sff})}^{\prf}(\kappa) :=\\ &\left| \Pr[\Dist^{\sff_{k}}(1^{\kappa})=1] -
+  &\Adv_{\Dist,(\algf,\Gen_{\algf})}^{\prf}(\kappa) :=\\ &\left| \Pr[\Dist^{\algf_{k}}(1^{\kappa})=1] -
   \Pr[\Dist^{f}(1^{\kappa})]\right| \leq \negl(\kappa),
 \end{align*}
-where $k\gets \Gen_{\sff}(1^{\kappa})$ and $f\gets
-\Fun(\ell(\kappa),\ell'(\kappa))$. 
+where $k\gets \Gen_{\algf}(1^{\kappa})$ and $f\sgets
+\Fun(\fin_{\algf}(\kappa),\fout_{\algf}(\kappa))$. 
+
+As usual, the maximal advantage of any warden against
+$(\algf,\Gen_{\algf})$ is called the \myDef{\ac{PRF}-insecurity}
+$\InSec_{(algf,\Gen_{\algf})}^{\prf}(\kappa)$ and defined as
+\begin{align*}
+  \InSec_{(\algf,\Gen_{\algf})}^{\prf}(\kappa) := \max_{\Dist}\{\Adv^{\prf}_{\Dist,(\algf,\Gen_{\algf})}(\kappa)\}.
+\end{align*}
+
+As for the distribution distinguisher, we also use more refined notion
+of insecurity: If $q$ and $t$ are two polynomials, let
+\begin{align*}
+  \InSec_{(\algf,\Gen_{\algf})}^{\prf}(q,t,\kappa) := \max_{\Dist}\{\Adv^{\prf}_{\Dist,(\algf,\Gen_{\algf})}(\kappa)\},
+\end{align*}
+where the maximum is taken over all distinguishers that run in time
+$t(\kappa)$ and make at most $q(\kappa)$ queries to their function
+oracle. 
 
 Furthermore, if
-$\ell(\kappa)=\ell'(\kappa)$ and if every $\sff_{k}$ is a permutation we
-say that the pair $(\sff,\Gen_{\sff})$ is a \myDef{\ac{PRP}}.
+$\fin_{\algf}(\kappa)=\fout_{\algf}(\kappa)$ and if every $\algf_{k}$ is a permutation we
+say that the pair $(\algf,\Gen_{\algf})$ is a \myDef{\ac{PRP}}.
 
 Note that due to the definition of \acp{PRF}, they share \emph{all}
 properties of totally random functions that one can test in polynomial
@@ -361,35 +467,35 @@ protocol for the original protocol.
 
 
 In the chapters concerned with
-non-efficient steganography, we will drop the requirement that $\sff$ is
-efficient computable and say that such a pair $(\sff,\Gen_{\sff})$ is a
+non-efficient steganography, we will drop the requirement that $\algf$ is
+efficient computable and say that such a pair $(\algf,\Gen_{\algf})$ is a
 \myDef{non-efficient \ac{PRF}}. 
 
 
 \subsection*{Signature Schemes}
 A \myDef{signature scheme} $(\Gen,\Sign,\Vrfy)$ is a triple of
-\acp{PPTM} such that the algorithm $\Gen(1^{\kappa})$ produces a pair $(pk,sk)$ of
-keys with $|pk|\geq \kappa$ and $|sk|\geq \kappa$. We call $pk$ a
-\emph{public key} and $sk$ a \emph{secret/private key}. The \myDef{signing
-algorithm} $\Sign$ takes as input the secret key $sk$, a \emph{message}
+\acp{PPTM} such that the algorithm $\Gen(1^{\kappa})$ produces a pair $(\pk,\sk)$ of
+keys with $|\pk| = \kappa$ and $|\sk| = \kappa$. We call $\pk$ a
+\emph{public key} and $\sk$ a \emph{secret/private key}. The \myDef{signing
+algorithm} $\Sign$ takes as input the secret key $\sk$, a \emph{message}
 $m\in \{0,1\}^{\ell(\kappa)}$ and outputs a \myDef{signature} $\sigma\in
 \{0,1\}^{*}$. The \myDef{verifying algorithm} $\Vrfy$ takes as input the
-public key $pk$, a message $m\in \{0,1\}^{\ell(\kappa)}$ and a signature
+public key $\pk$, a message $m\in \{0,1\}^{\ell(\kappa)}$ and a signature
 $\sigma\in \{0,1\}^{*}$. It outputs a bit $b$ with $b=1$ iff $\sigma \in
-\supp(\Sign(pk,m))$. We will typically treat $\Sign$ and $\Vrfy$ as
-keyed functions and will thus also write $\Sign_{sk}$ and $\Vrfy_{pk}$
+\supp(\Sign(\pk,m))$. We will typically treat $\Sign$ and $\Vrfy$ as
+keyed functions and will thus also write $\Sign_{\sk}$ and $\Vrfy_{\pk}$
 for the corresponding function, where the key is fixed. A \myDef{forger}
-$\Forg$ is a \ac{PPTM} that upon input $pk$ and oracle access to
-$\Sign_{sk}$ tries to produce a pair $(m,\sigma)$ such that
-$\Vrfy_{pk}(m,\sigma)=1$. Formally, this is defined via the following
+$\Forg$ is a \ac{PPTM} that upon input $\pk$ and oracle access to
+$\Sign_{\sk}$ tries to produce a pair $(m,\sigma)$ such that
+$\Vrfy_{\pk}(m,\sigma)=1$. Formally, this is defined via the following
 experiment $\Sig-Forge$.
 
 \myAlgorithm{$\Sig-Forge_{\Forg,(\Gen,\Sign,\Vrfy)}(\kappa)$}{Signature
  Scheme $(\Gen,\Sign,\Vrfy)$, Forger $\Forg$, length $\kappa$}{
-\State $(pk,sk) \gets \Gen(1^{\kappa})$
-\State $(m,\sigma) \gets \Forg^{\Sign_{sk}}(pk)$ 
-\State Let $Q$ be the set of messages given to $\Sign_{sk}$ by $\Forg$
-\If{$m\not\in Q$ and $\Vrfy_{pk}(m,\sigma)=1$}
+\State $(\pk,\sk) \gets \Gen(1^{\kappa})$
+\State $(m,\sigma) \gets \Forg^{\Sign_{\sk}}(\pk)$ 
+\State Let $Q$ be the set of messages given to $\Sign_{\sk}$ by $\Forg$
+\If{$m\not\in Q$ and $\Vrfy_{\pk}(m,\sigma)=1$}
    \AlgReturn{1}
 \Else
  \AlgReturn{0}
@@ -404,6 +510,14 @@ function $\negl$ such that
   \Pr[\Sig-Forge_{\Forg,\Pi}(\kappa)=1]\leq \negl(\kappa).
 \end{align*}
 
+As usual, the maximal advantage of any forger against
+$(\Gen,\Sign,\Vrfy)$ is called the \myDef{sig-insecurity}
+$\InSec_{(\Gen,\Sign,\Vrfy)}^{\sig}(\kappa)$ and defined as
+\begin{align*}
+  \InSec_{(\Gen,\Sign,\Vrfy)}^{\sig}(\kappa) := \max_{\Forg}\{\Adv^{\sig}_{\Forg,(\Gen,\Sign,\Vrfy)}(\kappa)\}.
+\end{align*}
+
+
 Note that this definition of security implies that a existentially
 unforgeable signature scheme is \emph{publicly verifiable} and has the
 property of \emph{non-repudiation} \cite{lindell2007introduction}, two
@@ -412,16 +526,19 @@ important aspects that we will also make use of.
 \subsection*{Symmetric Encryption Schemes}
 A \myDef{\ac{SES}} $(\Gen, \Enc,\Dec)$ is a triple of
 \acp{PPTM} such that $\Gen(1^{\kappa})$ produces a key
-$k\in \{0,1\}^{*}$ with $|k|\geq \kappa$. The \myDef{encryption
+$k\in \{0,1\}^{\kappa}$. The \myDef{encryption
   algorithm} $\Enc$ takes as input the key $k$ and a \emph{plaintext}
 $m\in \{0,1\}^{\ell(\kappa)}$ and outputs a \emph{ciphertext}
 $c\in \{0,1\}^{*}$. The \myDef{decryption algorithm} $\Dec$ takes as
 input the key $k$ and a ciphertext $c$ and outputs a plaintext
 $m\in \{0,1\}^{\ell(\kappa)}$. In order to make sure that the decryption
 is successful, we assume that there exists a negligible function $\negl$
-such that the probability
-$\Pr[\Dec(k,\Enc(k,m))\neq m]\leq\negl(\kappa)$, with
-$k\gets \Gen(1^{\kappa})$. 
+such that 
+\begin{align*}
+\max_{m\in \{0,1\}^{\ell(\kappa)}, k\gets \Gen(1^{\kappa})}\{\Pr[\Dec(k,\Enc(k,m))\neq m]\}\leq\negl(\kappa).  
+\end{align*}
+
+
 
 An \myDef{attacker} $(\Att_{1},\Att_{2})$ on
 the encryption scheme is a pair of \acp{PPTM}. In the \emph{first
@@ -436,7 +553,7 @@ $\CPA-Dist$.
 \myAlgorithm{$\CPA-Dist_{(\Att_{1},\Att_{2}),(\Gen,\Enc,\Dec)}(\kappa)$}{\ac{SES}
   $(\Gen,\Enc,\Dec)$, Attacker $(\Att_{1},\Att_{2})$, length $\kappa$}{
 \State $k \gets \Gen(1^{\kappa})$
-\State $(m_{0},m_{1},s)$ \gets $\Att_{1}^{\Enc_{k}}(1^{\kappa})$
+\State $(m_{0},m_{1},s) \gets \Att_{1}^{\Enc_{k}}(1^{\kappa})$
 \Comment{$s$ contains \emph{state information}}
 \State $b \sgets \{0,1\}$
 \State $c \gets \Enc_{k}(m_{b})$
@@ -446,7 +563,7 @@ $\CPA-Dist$.
 \Else
  \AlgReturn{0}
 \EndIf
-}{\acs{CPA}-Experiment}
+}{Chosen-Plaintext-Attack experiment}
 
 A \ac{SES} $(\Gen,\Enc,\Dec)$ is \myDef{\acs{CPA}-secure} if for every
 attacker $(\Att_{1},\Att_{2})$, there is a negligible function $\negl$
@@ -456,6 +573,22 @@ such that
   &\left|\Pr[\CPA-Dist_{(\Att_{1},\Att_{2}),(\Gen,\Enc,\Dec)}(\kappa)=1]
     - \frac{1}{2}\right|\leq \negl(\kappa).
 \end{align*}
+
+As usual, the maximal advantage of any attacker against
+$(\Gen,\Enc,\Dec)$ is called the \myDef{\ac{CPA}-insecurity}
+$\InSec_{(\Gen,\Enc,\Dec)}^{\cpa}(\kappa)$ and defined as
+\begin{align*}
+  \InSec_{(\Gen,\Enc,\Dec)}^{\cpa}(\kappa) := \max_{(\Att_{1},\Att_{2})}\{\Adv^{\cpa}_{(\Att_{1},\Att_{2}),(\Gen,\Enc,\Dec)}(\kappa)\}.
+\end{align*}
+
+Similarly to above, a more refined version of the insecurity exists. If
+$q$ and $t$ are two polynomials, let
+\begin{align*}
+  \InSec_{(\Gen,\Enc,\Dec)}^{\cpa}(q,t,\kappa) := \max_{(\Att_{1},\Att_{2})}\{\Adv^{\cpa}_{(\Att_{1},\Att_{2}),(\Gen,\Enc,\Dec)}(\kappa)\},
+\end{align*}
+where the maximum is taken over all attackers that run in time
+$t(\kappa)$ and make at most $q(\kappa)$ queries to the encryption
+oracle. 
 
 An even stronger security notion is the notion of security against \acfp{CPA+}, where the
 attacker $\Att_{1}$ outputs a single message $m$ and the string $c$ is either
@@ -473,6 +606,13 @@ such that
     \negl(\kappa).
 \end{align*}
 
+As usual, the maximal advantage of any attacker against
+$(\Gen,\Enc,\Dec)$ is called the \myDef{\ac{CPA+}-insecurity}
+$\InSec_{(\Gen,\Enc,\Dec)}^{\cpad}(\kappa)$ and defined as
+\begin{align*}
+  \InSec_{(\Gen,\Enc,\Dec)}^{\cpad}(\kappa) := \max_{(\Att_{1},\Att_{2})}\{\Adv^{\cpad}_{(\Att_{1},\Att_{2}),(\Gen,\Enc,\Dec)}(\kappa)\}.
+\end{align*}
+
 Clearly, \acs{CPA+}-security implies \acs{CPA}-security, but the other
 implication is not true: For example, the encryption algorithm $\Enc$
 may always appends a certain string at the end of each
@@ -481,46 +621,54 @@ ciphertext. Fortunately, most known \ac{CPA}-secure \ac{SES} are also
 
 \subsubsection*{Random Counter Mode}
 We will sometimes use simple, yet incredibly useful \ac{SES} called the
-\myDef{random counter mode}. Let $(\sff,\Gen_{\sff})$ be a \ac{PRF} that maps
-input strings of length $\ell(\kappa)$ into output strings of the same
-length $\ell(\kappa)$. The following algorithms then yields a
-\ac{SES} $(\Gen^{\sff},\Enc^{\sff},\Dec^{\sff})$:
+\myDef{random counter mode}. Let $(\algf,\Gen_{\algf})$ be a \ac{PRF} that maps
+input strings of length $\fin_{\algf}(\kappa)$ into output strings of
+length $\fout_{\algf}(\kappa)$. The following algorithms then yields a
+\ac{SES} $(\Gen^{\algf},\Enc^{\algf},\Dec^{\algf})$:
 \begin{itemize}
-\item The generator algorithm $\Gen^{\sff}$ simply uses $\Gen_{\sff}$ to create a
-  symmetric key $k$, \ie $\Gen^{\sff}(1^{\kappa})=\Gen_{\sff}(1^{\kappa})$. 
+\item The generator algorithm $\Gen^{\algf}$ simply uses $\Gen_{\algf}$ to create a
+  symmetric key $k$, \ie $\Gen^{\algf}(1^{\kappa})=\Gen_{\algf}(1^{\kappa})$. 
 \item The encryption algorithm works as follows for messages
-  $m=m_{1}m_{2}\ldots m_{n(\kappa)}$ with $m_{i}\in \{0,1\}^{\ell(\kappa)}$:
+  $m=m_{1}m_{2}\ldots m_{n(\kappa)}$ with $m_{i}\in \{0,1\}^{\fin_{\algf}(\kappa)}$:
 
-\myAlgorithm{$\Enc^{\sff}$}{key $k$, $m=m_{1}m_{2}\ldots m_{n(\kappa)}\in
-  \{0,1\}^{n(\kappa)\cdot \ell(\kappa)}$}{
+\myAlgorithm{$\Enc^{\algf}$}{key $k$, $m=m_{1}m_{2}\ldots m_{n(\kappa)}\in
+  \{0,1\}^{n(\kappa)\cdot \fin_{\algf}(\kappa)}$}{
 \State $\kappa := |k|$
-\State $r \sgets \{0,1\}^{\ell(\kappa)}$ \Comment{$r$ is treated as
+\State $r \sgets \{0,1\}^{\fin_{\algf}(\kappa)}$ \Comment{$r$ is treated as
   string \emph{and} number}
 \For{$i=1,\ldots,n(\kappa)$}
-\State $c_{i} := \sff_{k}(r+i \bmod 2^{\ell(\kappa)})\oplus m_{i}$
+\State $c_{i} := \algf_{k}(r+i \bmod 2^{\fin_{\algf}(\kappa)})\oplus m_{i}$
 \EndFor
 \State \AlgReturn $r,c_{1},c_{2},\ldots,c_{n(\kappa)}$
 }{Random Counter Mode Encryption}
 \item Similarly, the decryption inverts the encryption:
-\myAlgorithm{$\Dec^{\sff}$}{key $k$, $c=c_{0}c_{1}\ldots c_{n(\kappa)}\in
-  \{0,1\}^{(n+1)\cdot \ell(\kappa)}$}{
+\myAlgorithm{$\Dec^{\algf}$}{key $k$, $c=c_{0}c_{1}\ldots c_{n(\kappa)}\in
+  \{0,1\}^{(n(\kappa)+1)\cdot \fout_{\algf}(\kappa)}$}{
 \State $\kappa := |k|$
 \State $r := c_{0}$
 \For{$i=1,\ldots,n(\kappa)$}
-\State $m_{i} := \sff_{k}(r+i \bmod 2^{\ell(\kappa)})\oplus c_{i}$
+\State $m_{i} := \algf_{k}(r+i \bmod 2^{\fin_{\algf}(\kappa)})\oplus c_{i}$
 \EndFor
 \State \AlgReturn $m_{1},m_{2},\ldots,m_{n(\kappa)}$
 }{Random Counter Mode Decryption}
 \end{itemize}
 
-Clearly, every ciphertext $c=\Enc^{\sff}(k,m)$ is decoded correctly. Concerning
+Clearly, every ciphertext $c=\Enc^{\algf}(k,m)$ is decoded correctly. Concerning
 the security, \citeauthor{bellare1997concrete} already proved the
 following theorem in \cite{bellare1997concrete}, where they called this
 construction the \emph{XOR-Scheme}.
 
-\begin{theorem}[Theorem 13 in the full version of \cite{bellare1997concrete}]
-  If the pair $(\sff,\Gen_{\sff})$ is a \acl{PRF}, the \acl{SES}
-  $(\Gen^{\sff},\Enc^{\sff},\Dec^{\sff})$ is \ac{CPA+}-secure.
+\begin{theorem}[Theorem 13 in the full version of
+  \cite{bellare1997concrete}]
+\label{thm:counter_mode}
+  If the pair $(\algf,\Gen_{\algf})$ is a \acl{PRF}, the \acl{SES}
+  $(\Gen^{\algf},\Enc^{\algf},\Dec^{\algf})$ is \ac{CPA+}-secure. More
+  precisely if the \ac{SES} works on messages of length $n(\kappa)\cdot
+  \fin_{\algf}(\kappa)$, we have for polynomials $q$ and $t$ that
+  \begin{align*}
+    &\InSec_{(\Gen^{\algf},\Enc^{\algf},\Dec^{\algf})}^{\cpa}(q,t,\kappa)\leq\\
+    &\frac{q(\kappa)\cdot (n(\kappa)+1)\cdot \fout_{\algf}(\kappa)\cdot (q(\kappa)-1)}{\fin_{\algf}(\kappa)\cdot 2^{\fout_{\algf}(\kappa)}}+2\InSec^{\prf}_{(\algf,\Gen_{\algf})}(2qn,t,\kappa).
+  \end{align*}
 \end{theorem}
 
 \subsection*{Public-Key Encryption Schemes}
@@ -537,7 +685,7 @@ communication may take part. In order to remedy these problems,
 
 A \myDef{\ac{PKES}} $(\Gen,\PKEnc,\PKDec)$ is a triple of \acp{PPTM}
 such that $\Gen(1^{\kappa})$ produces a pair of keys $(\pk,\sk)$ with
-$|\pk|\geq \kappa$ and $|\sk|\geq \kappa$. The key $\pk$ is called the
+$|\pk| = \kappa$ and $|\sk| =  \kappa$. The key $\pk$ is called the
 \myDef{public key} and the key $\sk$ is called the \myDef{secret key}
 (or \emph{private key}). While $\pk$ will be publicly available to all
 parties, the secret key $\sk$ must be kept private by its owner. The
@@ -548,9 +696,13 @@ outputs a ciphertext $c\in \{0,1\}^{*}$. The \myDef{public-key decryption
 ciphertext $c$ and produces a plaintext $m\in
 \{0,1\}^{\ell(\kappa)}$. In order to make sure that the decryption
 is successful, we assume that there exists a negligible function $\negl$
-such that the probability
-$\Pr[\PKDec(\sk,\PKEnc(\pk,m))\neq m]\leq\negl(\kappa)$, with
-$(\pk,\sk)\gets \Gen(1^{\kappa})$. 
+such that 
+\begin{align*}
+\max_{\substack{m\in \{0,1\}^{\ell(\kappa)},\\(\pk,\sk)\gets \Gen(1^{\kappa})}}\{\Pr[\PKDec(\sk,\PKEnc(\pk,m))\neq
+m]\}\leq\negl(\kappa).   
+\end{align*}
+
+
 
 While an attacker against a \ac{SES} was given oracle access to the
 encryption algorithm, this is not needed in the public-key setting:
@@ -575,13 +727,13 @@ decoding algorithm $\PKDec_{\sk}$, clearly we must forbid that it
 uses it to decrypt $c$. 
 This security notion is known as security
 against \acp{CCA}. Formally, this is defined via the following experiment
-$\CCA-Dist$.
+$\CCA-Dist$. 
 
 
 \myAlgorithm{$\CCA-Dist_{(\Att_{1},\Att_{2}),(\Gen,\PKEnc,\PKDec)}(\kappa)$}{\ac{PKES}
   $(\Gen,\PKEnc,\PKDec)$, Attacker $(\Att_{1},\Att_{2})$, length $\kappa$}{
 \State $(\pk,\sk) \gets \Gen(1^{\kappa})$
-\State $(m_{0},m_{1},s)$ \gets $\Att_{1}^{\PKDec_{\sk}}(\pk)$
+\State $(m_{0},m_{1},s) \gets \Att_{1}^{\PKDec_{\sk}}(\pk)$
 \Comment{$s$ contains \emph{state information}}
 \State $b \sgets \{0,1\}$
 \State $c \gets \PKEnc_{\pk}(m_{b})$
@@ -591,7 +743,7 @@ $\CCA-Dist$.
 \Else
    \AlgReturn{1}
 \EndIf
-}{\acs{CCA}-Experiment}
+}{Chosen-Ciphertext-Attack Experiment}
 
 A \ac{PKES} $(\Gen,\PKEnc,\PKDec)$ is called \myDef{\acs{CCA}-secure}, if for
 every attacker $(\Att_{1},\Att_{2})$, there is a negligible function
@@ -600,6 +752,13 @@ $\negl$ such that
   &\Adv_{(\Att_{1},\Att_{2}),(\Gen,\PKEnc,\PKDec)}^{\cca}(\kappa) :=\\
   &\left|\Pr[\CCA-Dist_{(\Att_{1},\Att_{2}),(\Gen,\PKEnc,\PKDec)}(\kappa)=1]
     - \frac{1}{2}\right|\leq \negl(\kappa).
+\end{align*}
+
+As usual, the maximal advantage of any attacker against
+$(\Gen,\PKEnc,\PKDec)$ is called the \myDef{\ac{CCA}-insecurity}
+$\InSec_{(\Gen,\PKEnc,\PKDec)}^{\cca}(\kappa)$ and defined as
+\begin{align*}
+  \InSec_{(\Gen,\PKEnc,\PKDec)}^{\cca}(\kappa) := \max_{(\Att_{1},\Att_{2})}\{\Adv^{\cca}_{(\Att_{1},\Att_{2}),(\Gen,\PKEnc,\PKDec)}(\kappa)\}.
 \end{align*}
 
 As in the symmetric key, this notion of security can also be
@@ -617,8 +776,10 @@ there is a negligible function $\negl$ such that
   &\left|\Pr[\CCAD-Dist_{(\Att_{1},\Att_{2}),(\Gen,\PKEnc,\PKDec)}(\kappa)=1]-\frac{1}{2}\right|\leq
     \negl(\kappa).
 \end{align*}
-
-
+The \myDef{\ac{CCA+}-insecurity} is defined as
+\begin{align*}
+  \InSec_{(\Gen,\PKEnc,\PKDec)}^{\ccad}(\kappa) := \max_{(\Att_{1},\Att_{2})}\{\Adv^{\ccad}_{(\Att_{1},\Att_{2}),(\Gen,\PKEnc,\PKDec)}(\kappa)\}.
+\end{align*}
 
 
 %%% Local Variables:

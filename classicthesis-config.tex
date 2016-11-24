@@ -64,6 +64,7 @@
 \newcommand{\ie}{i.\,e.\xspace}
 \newcommand{\Ie}{I.\,e.\xspace}
 \newcommand{\eg}{e.\,g.\xspace}
+\newcommand{\wlogeneral}{w.\,l.\,o.\,g.\xspace}
 \newcommand{\Eg}{E.\,g.\xspace} 
 % ****************************************************************************************************
 
@@ -206,7 +207,7 @@
     pdfsubject={},%
     pdfkeywords={},%
     pdfcreator={pdfLaTeX},%
-    pdfproducer={LaTeX with hyperref and classicthesis}%
+    pdfproducer={LaTeX with hyperref and classicthesis},%
 }   
 
 % ********************************************************************
@@ -266,8 +267,33 @@
 % ********************************************************************
 \usepackage{amssymb} 
 \usepackage{amsthm} 
+\usepackage{bm}
 \usepackage{imakeidx}
 \makeindex
+
+\usepackage{tikz}
+\usetikzlibrary{positioning}
+\usetikzlibrary{decorations.markings}
+\usetikzlibrary{arrows.meta}
+
+\usepackage{pgfplots}
+\usepgfplotslibrary{fillbetween}
+\pgfplotsset{compat=1.12}
+
+
+
+\makeatletter
+
+\newcounter{algorithmicH}% New algorithmic-like hyperref counter
+\let\oldalgorithmic\algorithmic
+\renewcommand{\algorithmic}{%
+  \stepcounter{algorithmicH}% Step counter
+  \oldalgorithmic}% Do what was always done with algorithmic environment
+% \providecommand\theHALG@line{\thealgorithm.\arabic{ALG@line}}
+\providecommand\theHALG@line{ALG@line.\thealgorithmicH.\arabic{ALG@line}}
+% \renewcommand{\theHALG@line}{ALG@line.\thealgorithmicH.\arabic{ALG@line}}
+\makeatother
+
 
 
 
@@ -275,7 +301,7 @@
   \begin{algorithm}[H]
 \caption{#1: #4}
   \begin{tcolorbox}[title={#1}, colframe=black!10, coltitle=black]
-    \begin{algorithmic}
+    \begin{algorithmic}[1]
 \Require #2
       #3
     \end{algorithmic}
@@ -290,9 +316,10 @@
     (informal)}}
 
 \newcommand{\AlgReturn}[1]{ \textbf{return} #1}
+\newcommand{\algo}[1]{ \mathsf{#1}}
 
 \newcommand{\nats}{\mathbb{N}}
-
+\newcommand{\landauO}{\mathcal{O}}
 \newcommand{\reals}{\mathbb{R}}
 \newcommand{\sgets}{\twoheadleftarrow}
 \newcommand{\rats}{\mathbb{Q}}
@@ -301,27 +328,40 @@
 \newcommand{\machine}{\mathsf{M}}
 \newcommand{\chan}{\mathcal{C}}
 \newcommand{\stegos}{\mathcal{S}}
+\newcommand{\DomainHistory}{\left(\Sigma^{n(\kappa)}\right)^{*}}
 \DeclareMathOperator{\dom}{dom}
+\DeclareMathOperator{\fout}{out}
+\DeclareMathOperator{\fin}{in}
 \DeclareMathOperator{\supp}{supp}
 \DeclareMathOperator{\Exp}{Exp}
 \DeclareMathOperator{\img}{img}
+\DeclareMathOperator{\query}{query}
+\DeclareMathOperator{\rate}{rate}
+\DeclareMathOperator{\collision}{Collision}
 \DeclareMathOperator{\Coll}{\mathsf{Coll}}
 \DeclareMathOperator{\Sig-Forge}{\mathsf{Sig-Forge}}
+\DeclareMathOperator{\DDisting}{\mathsf{Dist-Disting}}
+\DeclareMathOperator{\SSCHA-Dist}{\mathsf{SS-CHA-Dist}}
+\DeclareMathOperator{\SSCCA-Dist}{\mathsf{SS-CCA-Dist}}
+\DeclareMathOperator{\SSRCCA-Dist}{\mathsf{SS-RCCA-Dist}}
 \DeclareMathOperator{\CPA-Dist}{\mathsf{CPA-Dist}}
-\DeclareMathOperator{\CPAD-Dist}{\mathsf{CPA+-Dist}}
+\DeclareMathOperator{\CPAD-Dist}{\mathsf{CPA\$-Dist}}
 \DeclareMathOperator{\CCA-Dist}{\mathsf{CCA-Dist}}
-\DeclareMathOperator{\CCAD-Dist}{\mathsf{CCA+-Dist}}
+\DeclareMathOperator{\CCAD-Dist}{\mathsf{CCA\$-Dist}}
 \DeclareMathOperator{\negl}{\mathsf{negl}}
+\DeclareMathOperator{\poly}{\mathsf{poly}}
+\DeclareMathOperator{\lin}{\mathsf{lin}}
 
 \DeclareMathOperator{\Fun}{Fun}
 \DeclareMathOperator{\Pics}{Pics}
 
 \DeclareMathOperator{\Gen}{\mathsf{Gen}}
 \DeclareMathOperator{\Inv}{\mathsf{Inv}}
-\DeclareMathOperator{\sff}{\mathsf{F}}
-\DeclareMathOperator{\sfh}{\mathsf{H}}
+\DeclareMathOperator{\algf}{\algo{F}}
+\DeclareMathOperator{\algh}{\algo{H}}
 \DeclareMathOperator{\Fi}{\mathsf{Fi}}
 \DeclareMathOperator{\Dist}{\mathsf{Dist}}
+\DeclareMathOperator{\DDist}{\mathsf{DDist}}
 \DeclareMathOperator{\Sign}{\mathsf{Sign}}
 \DeclareMathOperator{\Vrfy}{\mathsf{Vrfy}}
 \DeclareMathOperator{\Forg}{\mathsf{Fo}}
@@ -330,8 +370,11 @@
 \DeclareMathOperator{\PKEnc}{\mathsf{PKEnc}}
 \DeclareMathOperator{\PKDec}{\mathsf{PKDec}}
 \DeclareMathOperator{\SEnc}{\mathsf{SEnc}}
+\DeclareMathOperator{\Steg}{\mathsf{S}}
 \DeclareMathOperator{\SDec}{\mathsf{SDec}}
 \DeclareMathOperator{\Att}{\mathsf{A}}
+\DeclareMathOperator{\Ward}{\mathsf{W}}
+\DeclareMathOperator{\RejSam}{\mathsf{RejSam}}
 
 \newcommand{\pk}{\textit{pk}}
 \newcommand{\sk}{\textit{sk}}
@@ -343,13 +386,19 @@
 
 
 \DeclareMathOperator{\Adv}{\mathbf{Adv}}
+\DeclareMathOperator{\InSec}{\mathbf{InSec}}
+\DeclareMathOperator{\unrel}{\mathbf{UnRel}}
 \DeclareMathOperator{\hash}{hash}
 \DeclareMathOperator{\prf}{prf}
 \DeclareMathOperator{\sig}{sig}
 \DeclareMathOperator{\cpa}{cpa}
-\DeclareMathOperator{\cpad}{cpa+}
+\DeclareMathOperator{\dist}{dist}
+\DeclareMathOperator{\sscha}{ss-cha}
+\DeclareMathOperator{\sscca}{ss-cca}
+\DeclareMathOperator{\ssrcca}{ss-rcca}
+\DeclareMathOperator{\cpad}{cpa\scalebox{.7}{\$}}
 \DeclareMathOperator{\cca}{cca}
-\DeclareMathOperator{\ccad}{cca+}
+\DeclareMathOperator{\ccad}{cca\scalebox{.7}{\$}}
 
 \newcommand{\minent}{H_{\infty}}
 
@@ -357,6 +406,7 @@
 
 
 \newtheorem{theorem}{Theorem}
+\newtheorem{corollary}[theorem]{Corollary}
 
 
 \theoremstyle{definition}
@@ -377,6 +427,8 @@
   }%
 }
 \makeatother
+
+
 
 % ****************************************************************************************************
 % ********************************************************************

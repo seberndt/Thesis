@@ -1,7 +1,1256 @@
 \chapter{Universal Non-Efficient Secret-Key Steganography}
+\label{chap:universal_nonefficient_secret}
+\begin{flushright}{\slshape    
+Time is on my side, yes it is.} \\ \medskip
+    --- The Rolling Stones
+\end{flushright}
+
+As already noted in \autoref{chap:models}, in the steganographic model
+introduced by \citeauthor{hopper2009provably} in
+\cite{hopper2009provably}, an imbalance between Alice and Warden was
+introduced: While the running time of Warden is restricted to a
+polynomial in $\kappa$, the running time of Alice is not restricted at
+all. Note that this imbalance is present in several works, \eg
+\cite{hopper2002provably, hopper2009provably, hopper2004toward} and also
+used therein. In this chapter, we will focus on the following questions
+raised by these works and by the work of \citeauthor{dedic2009lower}
+in \cite{dedic2009lower}:
+\begin{enumerate}
+\item What is the relationship between cryptography and steganography?
+\item Can one use this imbalance to construct an unconditionally secure
+  stegosystem?
+\item What is the tradeoff between  the rate and the query
+  complexity of a secure and reliable stegosystem?
+\end{enumerate}
+
+The main results of this chapter are the following two theorems that
+prove the existence of rate-efficient \emph{unconditional (but inefficient)} secure stegosystems
+and \emph{unconditionally} relate the query complexity and the transmission
+rates of all universal stegosystems thereby improving upon results in
+\cite{hopper2009provably} and \cite{dedic2009lower}:
+
+\begin{theorem}[Informal]\label{th:main:existexp}
+For every $1>\alpha_{1}\geq \alpha_{2}>0$,
+there exists a non-efficient stegosystem $\Steg$, with security parameter $\kappa$, 
+such that for every channel $\chan$ with
+min-entropy $\minent(\chan,n(\kappa))> 2\cdot
+\kappa^{\alpha_{2}}$ and documents of length $\kappa^{\alpha_{1}}$,
+ the stegosystem~$\Steg$ 
+\begin{itemize}
+\item  hides an $\ell(\kappa) \cdot \kappa^{\alpha_{2}}$-bit message
+  into $\ell(\kappa)$ documents ($\rate_{\Steg,\chan}(\kappa)=\kappa^{\alpha_{2}}$)
+\item 
+  takes $\query_{\Steg,\chan}(\kappa)\le \kappa 2^{\kappa^{\alpha_{2}}} $ samples per documents, and 
+\item 
+ has insecurity and  unreliability negligible in $\kappa$ 
+ (if $\chan$ does  not break the used hard functions):
+  \begin{align*}
+  \InSec_{\Steg,\chan}^{\sscha}(\kappa) + \unrel(\kappa) \ \le \  \negl(\kappa). 
+  \end{align*}
+\end{itemize}
+\end{theorem}
+
+\begin{theorem}[Informal]\label{th:main:lower:bound}
+  There exists  a  channel $\chan$ such that for every universal 
+  stegosystem $\Steg$, it holds that
+  \begin{align*} 
+    &\InSec_{\Steg,\chan}^{\sscha}(\kappa) + \unrel_{\Steg,\chan}(\kappa) \ge  \\
+    &\frac{1}{2}-  \frac{e\cdot \query_{\Steg,\chan}(\kappa)}{2^{\rate_{\Steg,\chan}(\kappa)}}  -o(1).
+  \end{align*}
+\end{theorem}
+
+
+
+A preliminary version of the results of this chapter was published as
+\cite{berndt2016optimal}. In the next Section, we discuss our first
+question regarding the relationship between steganography and
+cryptography. We will then discuss the relevant literature for this
+chapter and prove our two main results.
+
+
+\section{The Relationship Between Steganography and Cryptography}
+Although there is a strong connection between these areas,
+steganography is \emph{not} cryptography.
+Our example below shows even more, namely that 
+polynomial-time bounded steganography is \emph{not} cryptography.
+A commonly heard argument for the premise that steganography is 
+cryptography goes as follows: 
+{\advance\leftmargini 1em
+\begin{quote}
+  Let $m$ and $m'$ be two different secret messages and 
+  $d$ and $d'$ be stego-documents which embed $m$, resp. $m'$. 
+  If the distributions of $d$ and $d'$ are indistinguishable 
+  from the distribution of the cover-documents,
+  then by the triangle-inequality, the distributions of $s$ and $s'$
+  are also indistinguishable. Hence, a secure
+  stegosystem is also a secure cryptosystem.
+\end{quote}}
+While the argument concerning the triangle-inequality is true, one can
+not simply use the stegosystem as a cryptosystem, as the stegosystem
+needs access to samples from the channel. Arguably, the most researched
+channel is those of natural digital pictures (say in the \acs{JPEG} format). A
+typical stegosystem for this channel
+takes a sample picture and
+modifies it in a way that is not detectable. A cryptosystem that
+simulates this stegosystem thus needs a way to get a sample
+picture. But the standard definition of cryptosystems does \emph{not} assume
+such access and it is highly unlikely that an efficient 
+algorithm to simulate sampling
+for this channel can be constructed.  We will note later on
+that ignoring this access leads to misunderstandings, e.g. in the often
+cited work \cite{hopper2009provably} of \citeauthor{hopper2009provably}.
+
+Beside providing a rigorous definition for computationally secure
+steganography, the main contribution of 
+\cite{hopper2009provably} is demonstrating that a
+widely believed complexity-theoretic assumption \textendash\ the
+existence of one-way functions \textendash\ and access to a channel
+oracle are both necessary and sufficient conditions for the existence of
+secure and reliable steganography:
+
+\begin{theorem}[{\cite[Corollary 1]{hopper2009provably},informal}]
+\label{th:equiv:sec:stego:OWF}
+Relative to an oracle for channel~$\chan$,
+secure (and reliable) stegosystems exist if and only if  
+one-way functions exist.
+% and secure steganography are equivalent. 
+\end{theorem}
+
+This claim is now widely circulated in the literature.
+In her handbook~\cite[p.~101]{fridrich2009steganography} on steganography, Fridrich writes: 
+{\advance\leftmargini 1em
+\begin{quote}
+  ``One of the most intriguing implications of this complexity-theoretic
+  view of steganography is the fact that secure stegosystems exist
+  if and only if secure one-way (hash) functions exist [...]''. %under the assumption  
+\end{quote}}
+
+While one direction of \autoref{th:equiv:sec:stego:OWF} \textendash\
+namely that one can construct secure stegosystems from one-way functions
+\textendash\ is correct, as argued in \autoref{sec:rejsam}, we will
+prove that steganography does not necessarily implies the existence of
+one-way functions. The following theorem of
+\citeauthor{hopper2009provably} in \cite{hopper2009provably} argues that
+one-way functions are necessary for secure steganography:
+
+\begin{theorem}[\cite{hopper2009provably}, informal]
+\label{th:hopper:steg:impl:one-way}
+For all channels $\chan$ it is true: if secure and reliable steganography
+for $\chan$ exists then there exist one-way functions relative to an
+oracle for $\chan$.\footnote{\citeauthor{hopper2009provably}  prove even stronger result
+  using a weaker notion of security. Theorem~9 in
+  \cite{hopper2009provably} says that if there is a stegosystem $\Steg$
+  that is \acs{SS-KHA}-$D$-$\chan$ secure for some hiddentext distribution
+  $D$ and some channel $\chan$, then there exists a pseudorandom
+  generator, relative to an oracle for $\chan$.}
+\end{theorem}
+
+Combining \autoref{th:main:existexp} with
+\autoref{th:equiv:sec:stego:OWF}
+one would conclude that (1) relative to
+an oracle for channel $\chan$ one-way functions exist and much more
+startling, that (2) \emph{one-way functions exist in the standard
+  model}, i.e., without assuming oracle access to the channel~$\chan$. As
+a proof on the existence of one-way functions seems to be far away from
+our current knowledge, one must wonder at the validity of
+\autoref{th:equiv:sec:stego:OWF}. Indeed, we found errors in the proof
+of \autoref{th:hopper:steg:impl:one-way} which consequently do not
+allow to conclude \autoref{th:equiv:sec:stego:OWF}.
+
+
+There are three issues concerning this proof.
+
+\begin{itemize}
+\item  \myNote{time complexity} Firstly, the time complexity of the
+proposed \emph{\ac{FEG}}, a kind of oracle used in
+the construction and the use of relativized primitives. The aim was to
+provide an algorithm for an \ac{FEG}, assuming the existence of a stegosystem
+$\Steg$ that is \acs{SS-KHA}-$D$-$\chan$ secure for some hiddentext distribution
+$D$ and some channel $\chan$ (for the exact definitions,
+see~\cite{hopper2009provably}). 
+
+The proposed construction for the \ac{FEG} uses, as a subroutine, the encoder
+of $\Steg$ having an oracle access to $\chan$.  Since no restrictions on the
+running time of the encoder are given, it does not follow that the
+obtained algorithm for the \ac{FEG} is bounded by a polynomial. This problem can
+be fixed by assuming that the stegosystem runs in polynomial time.
+Note, however, that making the assumption of polynomial time complexity 
+for stegosystems, the claim of \cite[Section~4.3]{hopper2009provably}
+concerning rate-optimality is false, as the proposed system requires
+exponential time. By proving \autoref{th:main:existexp}, we will show
+that the assumption on the running time of a stegosystem are very
+relevant. 
+
+
+\item \myNote{randomization} Secondly, according to the definition, an \ac{FEG} is a \emph{function}.
+However, the \ac{FEG} relative to an
+oracle $\chan$ does not seem to be deterministic, as it sometimes returns
+the samples generated by the channel oracle. This does not seem to be
+fixable easily, but one can make use of randomized cryptographic
+primitives in order to give an alternative proof.
+
+\item \myNote{channel access} The third obstacle still remains: In order to construct a
+cryptographic primitive out of a stegosystem, one needs to simulate the
+access to the channel oracle. If this simulation can be carried out in
+polynomial time, the constructed primitive is indeed efficient. But, as
+discussed in \autoref{sec:relativized}, such an assumption is quite
+artificial. And indeed, if the channel oracle can not be simulated in
+polynomial time, the constructed cryptographic primitive is not
+efficient. It seems that the only remedy to this is to define another
+way of \emph{relativized primitives}, where the primitive has also
+access to the channel oracle as in this work.
+\end{itemize}
+
+\section{Known Upper and Lower Bounds on the Security of the Rejection
+  Sampling Stegosystem}
+We use this section to present the relevant literature concerned with
+upper and lower bounds for the rejection sampling stegosystem.
+In the following, let $(\algf,\Gen_{\algf})$ be a \acl{PRF} and
+$\Pi=(\Gen,\Enc,\Dec)$ be a \acl{SES}.  
+\subsection*{Upper Bounds}
+As discussed in
+\autoref{thm:rejsam:secure} in \autoref{sec:rejsam}, the rejection
+sampling system $\RejSam^{\algf,\Pi}$ with rate $\fout_{\algf}(\kappa)$ fulfills the following
+inequalities
+\begin{align*}
+    & \InSec_{\RejSam^{\algf,\Pi},\chan}(\kappa) \leq \Phi_{\chan}^{\algf,\Pi}(\kappa\cdot
+    2^{\fout_{\algf}(\kappa)}), \text{ and}\tag{*}\label{eq:insec:hopper}\\
+  & \unrel_{\RejSam^{\algf,\Pi},\chan}(\kappa) \leq \Phi_{\chan}^{\algf,\Pi}(\kappa\cdot 2^{\fout_{\algf}(\kappa)}),
+\end{align*}
+with
+\begin{align*}
+  &\Phi_{\chan}^{\algf,\Pi}(t)  :=\\
+  &\InSec^{\prf}_{(\algf,\Gen_{\algf}),\chan}(t)+\InSec^{\cpad}_{\Pi,\chan}(t)+\negl(\kappa)+2^{\fout_{\algf}(\kappa)-\minent(\chan,n(\kappa))}
+\end{align*}
+for a negligible function $\negl$. 
+
+Hence, the system is reliable and secure if and only if the term
+$\Phi_{\chan}^{\algf,\Pi}(\kappa\cdot 2^{\fout_{\algf}(\kappa)})$ is negligible. We
+notice that, if the transmission rate exceeds the logarithm of the key
+length $\kappa$, then the proofs provided in~\cite{hopper2009provably}
+do not guarantee that unreliability and insecurity (recall, even against
+polynomial-time bounded warden) of the proposed stegosystems are
+negligible.
+
+More precisely, in case the number of bits $\fout_{\algf}(\kappa)$
+embedded in a single document grows asymptotically faster than
+$\log \kappa$, the term $\Phi_{\chan}^{\algf,\Pi}(\kappa\cdot
+2^{\fout_{\algf}(\kappa)})$ is not guaranteed to be negligible, as the
+two terms
+$\InSec^{\prf}_{(\algf,\Gen_{\algf})}(\kappa\cdot
+2^{\fout_{\algf}(\kappa)})$ and $\InSec^{\cpad}_{\Pi}(\kappa\cdot
+2^{\fout_{\algf}(\kappa)})$ are not
+guaranteed to be negligible in $\kappa$ even if the existence of
+\acp{PRF} and \acp{SES} is assumed. This is due to the fact that one
+assumes security of \acp{PRF} and \acp{SES} against polynomial-time
+attacker and the term $\kappa 2^{\fout_{\algf}(\kappa)}$ is super-polynomial for
+$\fout_{\algf}(\kappa) \in \omega(\log \kappa)$.
+Thus, if a channel $\chan$ allows to embed up to 
+$\poly(\kappa)$ bits per document, \ie if its min-entropy $\minent(\chan,n(\kappa))$ is very high, 
+the stegosystem of \citeauthor{hopper2009provably} is not scalable to
+meet the optimal rate:
+for any $\fout_{\algf}(\kappa)\le \poly(\kappa)$ its query complexity is  
+$\query_{\RejSam^{\algf,\Pi},\chan}(\kappa)=\kappa 2^{\fout_{\algf}(\kappa)}$  but its 
+insecurity and unreliability is guaranteed negligible only for very low
+rates 
+$\fout_{\algf}(\kappa) \in  \landauO(\log \kappa)$.
+We illustrate this in \autoref{fig:queries:vs:rate}.
+
+
+\begin{figure}[ht]
+  \centering
+\begin{tikzpicture}[xscale=0.5, yscale=0.5]
+  \draw[-{>[scale=2]}] (0,0) to (0,5.3);
+  \draw[-{>[scale=2]}] (0,0) to (12.2,0);
+  \node[align=center] at (-.1,4.5) [left] {\#queries $q$\\(log scale)};
+  \node at (11,-1.2) [above] {rate $r$};
+
+  \draw (3,-.1) to (3,.1);
+  \node at (3,-1.2) [above] {$\log \kappa$};
+  \draw (6,-.1) to (6,.1);
+  \node at (6,-1.2)  [above] {$\sqrt{\kappa}$};
+  \draw (9,-.1) to (9,.1);
+  \node at (9,-1.2)  [above]  {$\kappa^{1-\delta}$};
+%  \draw[dashed,color=orange] (9,0) to (9,4);
+
+  \draw (-.1,3) to (.1,3);
+  \node at (-.1,3) [left] {$\poly(\kappa)$};
+
+% Dedic
+  \draw[dashed] (3,0) to (3,4);
+  \draw[domain=0:3,smooth,color=black!20!white] plot ({\x},{\x});
+  \node[color=black!40!white,fill=white] at (9,4.0) {$\InSec(\kappa)+\unrel(\kappa) \le \epsilon$};
+
+  \draw[fill=red!20!white]  (0,0) -- (3,3) -- (3,0) -- cycle;
+%  \draw[domain=3:10,smooth,color=red!40!white] plot ({\x},{3*exp(3-\x)});
+  % \fill[domain=3:10,fill=red!40!white] (3,0) -- plot ({\x},{3*exp(3-\x)}) --
+  % (10,0) -- cycle;
+
+
+  \draw[domain=0:3,smooth,color=green!60!black,very thick] plot ({\x},{\x});
+
+  % \draw[domain=3:9,smooth,color=green!60!black,very thick] plot ({\x},{\x});
+
+% Open
+\node at (6,2) {\huge ?};
+
+% \node[draw=black,thick,rounded corners=2pt,below left=2mm,fill=white] at
+% (15.5,9.5) {%
+%   \begin{tikzpicture}[node distance=.0cm]
+%   \node[color=red!40!white] (dedic) {Not possible [Dedi{\'c}]};    
+%   \node[color=blue!30!white, below = of dedic] (hopper) {Achievable [Hopper]};    
+%   \node[color=green!60!black, below = of hopper] (we) {Achieveable [this
+%     work]};    
+%   \node[color=orange, below = of we] (it) {Information-theoretic upper bound};    
+%   \end{tikzpicture}
+% };
+
+\end{tikzpicture}
+\caption{Known results (under cryptographic assumptions): the green line shows 
+the dependence between the rate and number of queries to ensure negligible insecurity 
+and unreliability of the system of \citeauthor{hopper2009provably}
+(\autoref{thm:rejsam:secure}). 
+This bound is sharp: any system of rate and with number of queries % complexity 
+in the red area is insecure or unreliable
+(due to \autoref{thm:lower_bound_crypto} by \citeauthor{dedic2009lower}).
+The situation for $\fout_{\algf}(\kappa)\in \omega(\log \kappa) $ has remained open, so far.
+}
+\label{fig:queries:vs:rate}
+\end{figure}
+
+Using the rejection sampling technique, 
+\citeauthor{dedic2009lower} constructed two new universal
+stegosystems with upper bounds on the insecurity and unreliability
+similar to those of \autoref{thm:rejsam:secure} in their work
+\cite{dedic2009lower}. 
+Similarly to the system of \citeauthor{hopper2009provably}, if the
+number of bits $b$ per document grows asymptotically faster than
+$\log \kappa$, the security of the system is not guaranteed, even if the
+encoder and decoder use \acp{PRF}.
+Thus, also the results given in~\cite{dedic2009lower} do not
+guarantee the existence of universal steganography of 
+negligible unreliability and insecurity in case $b \in \omega(\log \kappa)$.
+
+\subsection*{Lower Bounds}
+
+In \cite{dedic2009lower}, \citeauthor{dedic2009lower} prove (under cryptographic
+assumptions) the existence of channels
+such that the number of samples the encoder of any
+secure and reliable universal stegosystem must obtain from those 
+channels is exponential in the number of bits embedded 
+per document. In our terms, their result can be stated as:
+\begin{theorem}[{\cite[Theorem 2]{dedic2009lower}, informal}] 
+\label{thm:lower_bound_crypto}
+  For every universal
+  stegosystem $\Steg$ 
+  there exists a channel $\chan$ such that  
+  \begin{align*} 
+    &\InSec_{\Steg,\chan}(\kappa) + \unrel_{\Steg,\chan}(\kappa) \ \ge\\
+    &\frac{1}{2} - \frac{e\cdot \query_{\Steg,\chan}(\kappa)}{2^{\rate_{\Steg,\chan}(\kappa)}} -\Psi(\query_{\Steg,\chan}(\kappa)) - o(1),     \tag{**}
+    \label{eq:insec:dedic}
+  \end{align*}
+  where $\Psi$ describes a term caused by the insecurity
+  of the \ac{PRF} used in the construction of $\chan$, \ie
+  \begin{align*}
+    \Psi(t) := \InSec^{\prf}_{(\algf,\Gen_{\algf})}(t)+\negl(\kappa)
+  \end{align*}
+for a negligible function $\negl$. 
+\end{theorem}
+
+They thus prove that the exponential query complexity
+$\kappa \cdot 2^{\fout_{\algf}(\kappa)}$ of $\RejSam^{\algf,\Pi}$ is asymptotically
+optimal: indeed, if
+$\query_{\Steg,\chan}(\kappa) \in o(\kappa \cdot 2^{\fout_{\algf}(\kappa)})$ and
+$\query_{\Steg,\chan}(\kappa)\in \kappa^{\landauO(1)}$, the right hand
+side of Equation~\eqref{eq:insec:dedic} goes to $1/2$. However, analogously to our discussion on
+the upper bound in Equation~\eqref{eq:insec:hopper}, we notice that the lower bound is not meaningful if
+$\query_{\Steg,\chan}(\kappa)\in \omega(\poly(\kappa))$ (even if
+$\query_{\Steg,\chan}(\kappa)\in o(\kappa 2^{\fout_{\algf}(\kappa)})$), as the right
+hand side of the inequality does not necessarily need to go to $0$ in
+this case.  The red area in \autoref{fig:queries:vs:rate} illustrates
+this lower bound.
+
+
+Later, \citeauthor{hopper2009provably} provided another lower 
+bound on the insecurity and unreliability  \cite[Theorem 5]{hopper2009provably} .
+They show that for every universal stegosystem $\Steg$
+and for any $\kappa$ there exists a channel such that: 
+\begin{align*} 
+&  \InSec_{\Steg,\chan}(\kappa,\query_{\Steg,\chan}(\kappa)) + \unrel(\kappa) \  \ge\\
+    &1-  \frac{\query_{\Steg,\chan}(\kappa)}{2^{\rate_{\Steg,\chan}(\kappa)}} -2^{-\kappa},
+  \tag{***}
+  \label{eq:insec:hopper:lower}
+\end{align*}
+where $\InSec(\kappa,q)$, in contrast to $\InSec(\kappa)$, denotes insecurity over wardens of time 
+complexity and size $> q$
+%
+Note that in the case of $\rate_{\Steg,\chan}(\kappa)\in \omega(\log \kappa)$, %lower 
+the bounds in Equation~\eqref{eq:insec:dedic}
+and Equation~\eqref{eq:insec:hopper:lower}
+are incomparable in the following sense.
+Due to Equation~\eqref{eq:insec:dedic}, if 
+in a reliable universal stegosystem $\Steg$
+the number of queries is dominated by $2^{\rate_{\Steg,\chan}(\kappa)}$ 
+then there exists a \emph{polynomial-time} bounded Warden 
+whose advantage to detect $\Steg$ is big. 
+The time complexity of the Warden 
+must not depend on the query complexity $\query_{\Steg,\chan}$ of $\Steg$
+but Equation~\eqref{eq:insec:dedic}
+needs the 
+assumption that pseudorandom functions exist
+and it may be meaningless if the rate exceeds $\log \kappa$.
+The bound in Equation~\eqref{eq:insec:hopper:lower} does 
+not need any cryptographic assumption, it is meaningful
+for any $\rate_{\Steg,\chan}(\kappa)$, but the Warden who detects $\Steg$ 
+needs time and size bigger than the query complexity $\query_{\Steg,\chan}(\kappa)$ of $\Steg$.
+Thus, in cases of super-polynomial query complexity, the Warden is not 
+polynomial-time bounded anymore implying $\InSec_{\Steg,\chan}(\kappa,q) \gg\InSec_{\Steg,\chan}(\kappa)$.
+
+
+\section{Our Contributions}
+
+Thus, as shown above, if high rate is required we have no guarantee that the
+discussed systems are %remain 
+secure and reliable. And indeed, \emph{no} secure
+and reliable universal stegosystem (irrespective of its query complexity) 
+with rate larger than $\log \kappa$ was known before, even under unproven 
+cryptographic assumptions.  
+Note that the secure stegosystems used
+in practice typically achieve a rate of  $\sqrt{\kappa}$
+% where, recall $n:=n(\kappa)$ denotes the length of a single document 
+ \textendash\ much larger than $\log(n)$ \cite{ker2013moving}.
+A longstanding conjecture, the \emph{Square Root Law of Steganographic
+Capacity} \cite{filler2009squaremarkov, ker2008square} 
+deals with just this fact. It says that a rate
+of the form $(1-\varepsilon)\sqrt{\kappa}$ is always achievable (not necessarily
+in a setting of universal steganography).
+We thus have the situation, that the best known theoretical rate is
+$\log \kappa$, while all practical rates are of order~$\sqrt{\kappa}$.  
+
+
+One of the main results of this chapter -- \autoref{th:main:existexp} -- is the construction 
+of a universal stegosystem
+that is scalable with respect to the rate 
+up to $n(\kappa)^\alpha$ for every $\alpha < 1$. 
+However, to achieve this rate, an
+exponential number of queries is needed. On the other hand 
+we prove in \autoref{th:main:lower:bound} that this query complexity is minimal. %optimal. 
+We give a complete answer to the 
+question shown in \autoref{fig:queries:vs:rate} of determining the relationship between rate 
+and number of queries.
+For an illustration of our results see 
+\autoref{fig:queries:our:results}.
+
+
+\label{sec:contribution}
+\begin{figure}[ht]
+  \centering
+\begin{tikzpicture}[xscale=0.5, yscale=0.5]
+  \draw[-{>[scale=2]}] (0,0) to (0,10.5);
+  \draw[-{>[scale=2]}] (0,0) to (12.2,0);
+  \node[align=center] at (-.1,9.2) [left] {\#queries $q$\\(log scale)};
+  \node at (11,-1.2) [above] {rate $r$};
+
+  \draw (3,-.1) to (3,.1);
+  \node at (3,-1.2) [above] {$\log \kappa$};
+  \draw (6,-.1) to (6,.1);
+  \node at (6,-1.2)  [above] {$\sqrt{\kappa}$};
+  \draw (9,-.1) to (9,.1);
+  \node at (9,-1.2)  [above]  {$\kappa^{1-\delta}$};
+  \draw[dashed,color=orange] (9,0) to (9,10);
+
+  \draw (-.1,3) to (.1,3);
+  \node at (-.1,3) [left] {$\poly(\kappa)$};
+
+% Dedic
+
+  \draw[domain=0:9,smooth,color=black!20!white] plot ({\x},{\x});
+  \node[color=black!40!white,fill=white] at (9,10) {$\InSec(\kappa)+\unrel(\kappa) \le \epsilon$};
+
+  \draw[fill=red!20!white]  (0,0) -- (8.9,8.9) -- (8.9,0) -- cycle;
+  \draw[dashed] (3,0) to (3,10);
+  % \draw[domain=3:10,smooth,color=red!40!white] plot ({\x},{3*exp(3-\x)});
+  % \fill[domain=3:10,fill=red!40!white] (3,0) -- plot ({\x},{3*exp(3-\x)}) --
+  % (10,0) -- cycle;
+  
+  \draw[domain=0:8.9,smooth,color=green!60!black,very thick] plot ({\x},{\x});
+
+% Open
+
+% \node[draw=black,thick,rounded corners=2pt,below left=2mm,fill=white] at
+% (15.5,9.5) {%
+%   \begin{tikzpicture}[node distance=.0cm]
+%   \node[color=red!40!white] (dedic) {Not possible [Dedi{\'c}]};    
+%   \node[color=blue!30!white, below = of dedic] (hopper) {Achievable [Hopper]};    
+%   \node[color=green!60!black, below = of hopper] (we) {Achieveable [this
+%     work]};    
+%   \node[color=orange, below = of we] (it) {Information-theoretic upper bound};    
+%   \end{tikzpicture}
+% };
+
+\end{tikzpicture}
+\caption{Results (without any assumptions) of this paper: 
+our stegosystem achieves negligible insecurity 
+and unreliability for the number of queries depending 
+on the rate as shown by the green plot. 
+This bound is sharp: any system of rate and query complexity 
+in the red area is unreliable or insecure against
+polynomial-time bounded wardens.}
+\label{fig:queries:our:results}
+\end{figure}
+
+\section{Pseudorandom Functions of Very High Hardness}
+\label{sec:secure-very:hard:prf}
+
+We construct two families of pseudorandom 
+functions that are secure against adversaries of sub-exponential 
+running times. Our result does not rely on any unproven assumptions
+but to construct the family, super-exponential time is needed.
+
+In our stegosystem we will apply a
+super-polynomial time computable pseudorandom function based on an
+algorithm $\algo{G}$ that also takes
+super-polynomial  time, which is given by the following result due
+to \citeauthor{goldreich1992sparse} in \cite{goldreich1992sparse}. In order to
+simplify the notation throughout this and the next section, let 
+$\alpha_1, \alpha_2$ be constants with $1>\alpha_{1}\geq
+\alpha_{2}>0$  and~let
+\begin{equation}\label{eq:def:const}
+  n=n(\kappa)=\kappa^{\alpha_{1}},  b=\fout_{\algf}(\kappa)=\kappa^{\alpha_{2}},   N=2^{n}\cdot b,\   \text{and}\
+B=2^{b}\cdot b.
+\end{equation}
+
+\begin{theorem}[{\cite[Lemma $5$]{goldreich1992sparse}}]
+Let $\varphi(n)$ be any sub-exponential function in $n$. There are
+(non-polynomial) generators which expand truly random strings of length $n$
+into pseudorandom string of length $\varphi(n)$. 
+\end{theorem}
+
+A close inspection of the result and its proof immediately implies the
+following theorem:
+
+\begin{theorem}
+\label{thm:goldreich_gen}
+There is a deterministic algorithm $\algo{G}$ running in time
+$\landauO(2^{2^{n}})$, that on input $x\in \{0,1\}^{\kappa}$ produces a
+string $\algo{G}(x)\in \{0,1\}^{N}$, and a negligible function $\negl$
+such that for all polynomials $t$:
+\begin{align*}
+  \InSec^{\dist}_{\algo{G}(\{0,1\}^{\kappa}),\{0,1\}^{N}}(1,t,N)\leq \negl(\kappa).  
+\end{align*}
+There is also another deterministic algorithm $\algo{G'}$ running in
+time $\landauO(2^{2^{b}})$, that on input
+$x\in \{0,1\}^{\kappa}$ produces a string $\algo{G'}(x)\in \{0,1\}^{B}$, and a
+negligible function $\negl'$ such that for all polynomials $t$:
+\begin{align*}
+  \InSec^{\dist}_{\algo{G'}(\{0,1\}^{\kappa}),\{0,1\}^{B}}(1,t,B)\leq \negl'(\kappa).
+\end{align*}
+\end{theorem}
+
+
+The theorem says  that no polynomial time algorithm in $N$
+(recall $N=2^{n}\cdot b$) can
+distinguish between the distribution $\algo{G}(\{0,1\}^{\kappa})$ and the uniform
+distribution on $\{0,1\}^{N}$. Similarly, no polynomial time algorithm
+in $B$ can distinguish $\algo{G'}(\{0,1\}^{\kappa})$ and the uniform
+distribution on $\{0,1\}^{B}$. Note that this is very close to the
+optimum. A distribution distinguisher that runs in time
+$\Omega(2^{\kappa})$ could compute $\algo{G}(\{0,1\}^{\kappa})$ and
+simply check whether the received query belongs to it. 
+
+
+The running
+time of $\algo{G}$ and $\algo{G'}$ is exponential in $N$ (resp. $B$), while the running time of the
+distinguisher is polynomial in $N$ (resp. $B$). 
+Note that the usual construction to obtain a pseudorandom function from
+a pseudorandom generator due to \citeauthor{goldreich1986construct}
+\cite{goldreich1986construct} is not suited for our situation: Its security
+proof relies on the ability of the attacker on the function to simulate
+the generator. As a simulation of the generator takes exponential time
+and our attackers are polynomial, we can not use this approach. Instead,
+we observe that the generators produce very long strings. We will
+interpret these strings as the table of a function.
+
+For a bit string $\omega=\omega_{1}\omega_{2}\ldots$ of length
+$2^{X}\cdot Y$, for some positive integers $X$ and $Y$,
+let the function 
+$F_{\omega}\colon \{0,1\}^{X}\to \{0,1\}^{Y}$
+be defined as
+\[F_{\omega}(z)=\omega_{i_{z}\cdot Y}\omega_{i_{z}\cdot Y+1}\ldots
+  \omega_{(i_{z}+1)\cdot Y-1},\]
+if $z$ is the binary representation of the number $i_{z}$.
+\begin{example}
+For example, the bit string $\omega=01\, 11\, 10\, 11\, 00\, 01\, 01\, 10$ corresponds
+to the function $F_{\omega}\colon \{0,1\}^{3}\to \{0,1\}^{2}$ with
+e.g. $F_{\omega}(000)=01$, $F_{\omega}(001)=11$, and
+$F_{\omega}(111)=10$. 
+\end{example}
+
+The definition of $F_\omega$ implies a bijection between
+$\{0,1\}^{2^{X}\cdot Y}$ and the set of all function from
+$\{0,1\}^{X}\to \{0,1\}^{Y}$ \ie $\Fun(X,Y)$.
+
+We will now construct \acp{PRF} out of the algorithms $\algo{G}$ and
+$\algo{G'}$ that we will call $(\algf,\Gen)$ respectively
+$(\algf',\Gen)$.  Both \acp{PRF} share the same key-generator $\Gen$,
+that upon input $1^{\kappa}$ chooses $k\sgets \{0,1\}^{\kappa}$ and
+returns the key $k$. The keyed function $\algf$ takes a key $k$ and a
+bitstring $x$ of length $n$, computes $\omega = \algo{G}(k)$ and returns
+$F_{\omega}(x)$. Similarly, $\algf'$ takes a key $k'$ and a bitstring
+$x'$ of length $b$, computes $\omega'=\algo{G'}(k')$ and returns the
+value $F_{\omega'}(x')$. As $\algo{G}$ and $\algo{G'}$ are
+non-efficient, so are $\algf$ and $\algf'$: A single call to
+$\algf_{k}(x)$ takes time $\landauO(2^{2^{n}})$ while a single call to
+$\algf'_{k'}(x')$ takes time $\landauO(2^{2^{b}})$. The following
+theorem shows that $\algf$ is not distinguishable from $\Fun(n,b)$ by
+any algorithm with time complexity $\poly(N)$ and $\algf'$ is not
+distinguishable from $\Fun(b,b)$ by any algorithm with time complexity
+$\poly(B)$.
+
+\begin{theorem}
+\label{thm:dist_prf_exist}
+For all functions $q$ and $t$ of $\kappa$ such that there are
+polynomial $p$ and $p'$ with $t(\kappa)\leq p(N)$ and $t(\kappa)\leq p'(B)$, we have
+\begin{enumerate}
+ \item[1.]     
+  $\InSec^{\prf}_{(\algf,\Gen)}(q,t,\kappa)\ \leq \
+  \InSec^{\dist}_{\algo{G}(\{0,1\}^{\kappa}),\{0,1\}^{N}}(1,p,N)$ and
+  \item[2.]       
+  $\InSec^{\prf}_{(\algf',\Gen)}(q,t,\kappa)\ \leq \
+  \InSec^{\dist}_{\algo{G'}(\{0,1\}^{\kappa}),\{0,1\}^{B}}(1,p',B)$.
+\end{enumerate}
+\end{theorem}
+The proof of the theorem relies simply on the fact that any
+\ac{PPTM} attacking $\algf$ has only access to an excerpt of
+size $\poly(\kappa)$ of $\algo{G}(x)$. Theorem \ref{thm:goldreich_gen} states that even
+access to the whole string of length $N\gg \poly(\kappa)$ does not help
+an adversary. The advantage of any adversary is thus only negligible. 
+
+\begin{proof}
+  We only prove the theorem for $\algf$, as the proof for $\algf'$ is analogous.
+
+  Let $\Dist$ be any \ac{PPTM} (distinguisher) that runs in time
+  $t(\kappa)$ and tries to distinguish $\algf$ from
+  $\Fun(n,b)$ by making $q(\kappa)$ queries. The algorithm $\Dist$ has
+  access to a function oracle $f$, which is either uniformly chosen from
+  $\Fun(n,b)$ or equal to $\algf_{k}$ for a certain $k\in
+  \{0,1\}^{\kappa}$.  We will now construct a distribution distinguisher $\DDist$ for
+  $\algo{G}$, such that
+  \begin{align*}
+    &\left|\Pr[\DDist^{\algo{G}(\{0,1\}^{\kappa})}(1^{\kappa})=1]-\Pr[\DDist^{\{0,1\}^{N}}(1^{\kappa})=1]\right|\ = \ \\
+    &\left|\Pr_{k}[\Dist^{\algf_{k}}(1^{\kappa})=1]-\Pr_{f}
+      [\Dist^{f}(1^{\kappa})=1]\right|,
+  \end{align*}
+where the probabilities are taken over the samples from the
+distributions and the choice of $k\sgets \{0,1\}^{\kappa}$ and $f\sgets
+\Fun(n,b)$. 
+  The distribution distinguisher $\DDist$ makes a single query to its distribution
+  oracle and receives a bit string $\omega\in \{0,1\}^{N}$,
+  which is either a random string or produced by $\algo{G}(x)$.
+  Whenever $\Dist$ makes a query $z$ to its function
+  oracle, $\DDist$ returns $F_{\omega}(z)$. In the end, $\DDist$ returns
+  the same value as $\Dist$. We thus have
+  \begin{align*}
+    \Pr_{k}[\Dist^{\algf_{k}}(1^{\kappa})=1]\ = \ \Pr[\DDist^{\algo{G}(\{0,1\}^{\kappa})}(1^{\kappa})=1]
+  \end{align*}
+  and because of the bijection between $\Fun(n,b)$ and
+  $\{0,1\}^{N}$, we have
+  \begin{align*}
+    \Pr_{f}[\Dist^{f}(1^{\kappa})=1]\ = \ \Pr[\DDist^{\{0,1\}^{N}}(1^{\kappa})=1].
+  \end{align*}
+  The computation of $F_{\omega}(z)$ takes time $\landauO(N)$ for each
+  query and the  simulation of $\Dist$ takes time $t(\kappa)$. In total,
+  $\DDist$ makes a single query and has running time $N\cdot
+  q(\kappa)+t(\kappa) \leq p(N)$.
+\end{proof}
+
+The following corollary thus follows directly from  \autoref{thm:goldreich_gen} 
+ and from \autoref{thm:dist_prf_exist} and
+sums up the results of this section.
+
+\begin{corollary}
+  There exists non-efficient \acp{PRF} $(\algf,\Gen)$ and
+  $(\algf',\Gen)$ and negligible functions $\negl$ and $\negl'$ such
+  that 
+  \begin{itemize}
+  \item $\fin_{\algf}(\kappa)=n$ and $\fin_{\algf'}(\kappa)=b$,
+  \item $\fout_{\algf}(\kappa)=\fout_{\algf'}(\kappa)=b$,
+  \item $\InSec^{\prf}_{(\algf,\Gen)}(q,t,\kappa)\leq \negl(\kappa)$ for all
+    functions $q$ and $t$ with $t(\kappa) \leq \poly(N)$,
+  \item and $\InSec^{\prf}_{(\algf',\Gen)}(q,t,\kappa)\leq \negl'(\kappa)$
+    for all functions $q$ and $t$ with $t(\kappa) \leq \poly(B)$.
+  \end{itemize}
+\end{corollary}
+
+\section{Rate-efficient Steganography }
+%\section{Unconditionally Secure and Reliable Steganography Exists}
+\label{sec:secure-steg-exists}
+
+In this section we prove that there exists secure, reliable and 
+rate-efficient steganography.
+Our result does not rely on any unproven assumption.
+
+To construct a universal stegosystem, which is unconditionally secure
+we will use the \acp{PRF} $(\algf,\Gen)$ and $(\algf',\Gen)$
+of the previous section
+in the rejecting-sampling algorithm.
+As in the previous section, 
+let $\alpha_1,\alpha_2$ be constants with 
+$1>\alpha_{1}\geq \alpha_{2}>0$
+and let $n, b,N, B$ be as defined in (\autoref{eq:def:const}) 
+in \autoref{sec:secure-very:hard:prf}. 
+ %on page~\pageref{eq:def:const}.
+
+In the following, let $\Steg$ be the rejection sampling stegosystem that
+is constructed by using the \ac{PRF} $(\algf,\Gen)$ to construct the set
+of functions and $\Pi=(\Gen^{\algf'},\Enc^{\algf'},\Dec^{\algf'})$ be
+the \ac{SES} derived from the random counter mode explained in
+\autoref{sec:primitives}, \ie $\Steg=\RejSam^{\algf,\Pi}$.
+
+\citeauthor{backes2005active}  proved in \cite{backes2005active} that $\RejSam$ is
+secure against \ac{SS-CHA} wardens as
+as long as the family of
+functions used is pseudorandom and as long as the number of bits
+embedded in a single document is at most $\log \kappa$. We will expand
+this result and prove that one can embed up to $o(\kappa)$ bits into
+a single document.
+
+
+By using our \acp{PRF} of very high hardness, we prove that the stegosystem  $\Steg$
+is secure for every channel with
+sufficient min-entropy that is sampleable in exponential time. 
+Moreover, it remains secure for any channel which does not break 
+the security of those \acp{PRF}.
+This analysis resembles the analysis in
+\cite{backes2005active}, but spells out the relation of
+$\InSec^{\sscha}_{\Steg,\chan}$ and
+$\InSec^{\prf}_{(\algf,\Gen),\chan}$ respectively
+$\InSec^{\prf}_{(\algf,\Gen)}$.
+
+
+
+  \begin{theorem}
+  \label{thm:stego_exists}
+  The rejection-sampling stegosystem $\Steg$ satisfies the following
+  properties relative to channel $\chan$ for all polynomials $q$ and $t$:
+  \begin{itemize}
+  \item \ 
+    
+    \vspace{-1.5cm}
+    \begin{align*}
+      &\InSec^{\sscha}_{\Steg,\chan}(q,t,\kappa) \leq\\
+      &\quad \InSec^{\prf}_{(\algf,\Gen),\chan}\left(q(\ell+1)2^{b}\kappa\ ,\
+        q(\ell+q)2^{b}\kappa\ ,\ 2^{b}\cdot \kappa\right)+\\
+      &\quad q(\kappa)(\ell(\kappa)+1)\left(2^{b-\minent(\chan,n)}+\eta^{2^{b}\kappa}\right)+\\
+      &\quad \InSec^{\prf}_{(\algf',\Gen)}(\ell+1\ ,\ (\ell+1)^{2}\ ,\ \kappa)  +\\
+      &\quad 2\InSec^{\prf}_{(\algf',\Gen),\chan}(2q\ell\ ,\ t\ ,\ \kappa) +
+      \frac{q(\kappa)\cdot (n+1)\cdot b\cdot 
+        (q(\kappa)-1)}{n\cdot 2^{b}}
+    \end{align*}
+for a constant $\eta < 1$.
+  \item  \ 
+
+    \vspace{-1.5cm}
+    \begin{align*}
+      &\unrel_{\Steg,\chan}(\kappa) \leq\\
+       &\quad
+         \InSec^{\prf}_{(\algf,\Gen),\chan}\left((\ell+1)2^{b}\kappa\ ,\ (\ell+1)2^{b}
+        \kappa\ ,\ 2^{b}\kappa\right)+\\
+      &\quad  (\ell(\kappa)+1)\cdot \exp(-\kappa)+(\ell(\kappa)+1)^{2} \cdot
+        \kappa^{2}\cdot  2^{2b-\minent(\chan,n)}
+    \end{align*}
+
+  \end{itemize}
+
+  \end{theorem}
+
+ 
+ 
+\begin{proof}
+\myNote{Security}
+  In order to bound the insecurity of the stegosystem, we construct for
+  every warden $\Ward$ that runs in time $t(\kappa)$ and makes
+  $q(\kappa)$ queries a distinguisher $\Dist$ on  $(\algf,\Gen)$
+  such that
+  \begin{align*}
+    & \Adv^{\sscha}_{\Ward,\Steg,\chan}(q,t,\kappa)\leq\\
+    &\quad
+    \Adv^{\prf}_{\Dist,(\algf,\Gen),\chan}\left(q(\ell+1)2^{b}\kappa\ ,\
+        q(\ell+q)2^{b}\kappa\ ,\ 2^{b}\cdot \kappa\right)+\\
+      &\quad q(\kappa)(\ell(\kappa)+1)\left(2^{b-\minent(\chan,n)}+\eta^{2^{b}\kappa}\right)+\\
+      &\quad \InSec^{\prf}_{(\algf',\Gen)}(\ell+1\ ,\ (\ell+1)^{2}\ ,\ \kappa)  +\\
+      &\quad 2\InSec^{\prf}_{(\algf',\Gen),\chan}(2q\ell\ ,\ t\ ,\ \kappa) +
+      \frac{q(\kappa)\cdot (n+1)\cdot b\cdot 
+        (q(\kappa)-1)}{n\cdot 2^{b}}
+  \end{align*}
+for a constant $\eta < 1$. This yields the security of the stegosystem.
+
+ Let $\Ward$ be any such
+  warden on the stegosystem $\Steg$ with respect to the channel
+  $\chan$. The distinguisher $\Dist$ has access to a function oracle $f$,
+  which is either uniformly chosen from $\Fun(n,b)$ or
+  equal to $\algf_{k}$ for a certain $k\in \{0,1\}^{\kappa}$. The
+  distinguisher $\Dist$ simulates the warden $\Ward$. Whenever $\Ward$
+  makes a query to
+  the channel-oracle, $\Dist$ uses its channel-oracle to produce such a
+  sample. Whenever $\Ward_{1}$ or $\Ward_{2}$ make a query $(m,h)$ to the challenging oracle,
+  $A$ uses the encoding algorithm $\SEnc_{f}(k,m,h)$, where the call to
+  the function $\algf$ is replaced by a call to $f$. After the first
+  phase, $\Ward_{1}$ produces a triple $(m,h,s)$ and $\Dist$
+  generates a random bit $b\sgets \{0,1\}$. If $b=0$, it computes
+  $d_{1},\ldots,d_{\ell(\kappa)} \gets \SEnc_{f}(k,m,h)$ and if $b=1$,
+  it samples $\ell(\kappa)$ random documents
+  $d_{1},\ldots,d_{\ell(\kappa)}$ from $\chan$. The distinguisher then simulates
+  $\Ward_{2}$ on input $d_{1},\ldots,d_{\ell(\kappa)},s$ and returns $1$
+  iff the output of $\Ward_{2}$ equals the bit $b$.
+
+\myNote{$f=\algf_{k}$}
+  If $f=\algf_{k}$, the distinguisher $\Dist$
+  simply simulates the run of $\Ward$ against the stegosystem and we
+  thus have
+  \begin{align*}
+    \Pr_{k}[\Dist^{\algf_{k}}(1^{\kappa})=1]=\frac{1}{2}+\Adv_{\Ward,\Steg,\chan}(\kappa).
+  \end{align*}
+
+\myNote{$f\sgets \Fun(n,b)$}
+  If $f$ is truly randomly and $m=m_{1}m_{2}\ldots m_{\ell(\kappa)}$ is
+  a message of length $\ell(\kappa)\cdot b$ such that $m_{i}\neq m_{j}$
+  for every $i\neq j$, we can think of $\SEnc_{f}(k,m,h)$ as
+  $\ell(\kappa)$-fold product of the probability distribution
+  $\SEnc_{f}(k,m_{i},\cdot)$, where $f$ is chosen randomly for every $i$.
+  The output of $\SEnc_{f}(k,m_{i},\cdot)$ is nearly identical to the
+  channel (see \autoref{thm:backes}), if the corresponding message of
+  length $b$ is also chosen uniformly. The statistical distance is
+  bounded by 
+  \begin{align*}
+    \ell(\kappa)\cdot \left(2^{\fout_{F}(\kappa)-\minent(\chan,n)}+\eta^{2^{\fout_{F}(\kappa)}\cdot
+  \kappa}\right)
+  \end{align*}
+for a constant $\eta < 1$.
+ \autoref{thm:counter_mode}
+  implies that for $\Ward$, the difference between the behavior of
+  $\SEnc_{f}(k,m_{i},h)$ on a uniformly chosen message $m_{i}$ or an
+  $m_{i}$ generated by the encryption $\Enc^{\algf'}$ is bounded by
+  \begin{align*}
+    2\InSec^{\prf}_{(\algf',\Gen),\chan}(q\ell,t,\kappa)+ \frac{q(\kappa)\cdot (n+1)\cdot b\cdot 
+        (q(\kappa)-1)}{n\cdot 2^{b}}.
+  \end{align*}
+
+  
+  As we do not give $m$ to $\SEnc$, but rather the message encrypted message
+  $m'=\Dec^{\algf'}(k,m)=m'_{1}m'_{2}\ldots m'_{\ell(\kappa)+1}$, the probability that
+  there are $i\neq j$ such that $m'_{i}=m'_{j}$ is at most
+  \begin{align*}
+    \InSec^{\prf}_{(\algf',\Gen)}(\ell+1,(\ell+1)^{2},\kappa)+\frac{(\ell(\kappa)+1)^{2}}{2^{b}},    
+  \end{align*}
+  by constructing an attacker on $\algf'$ which guesses values
+  $x_{1},\ldots,x_{\ell(\kappa)+1}$ and tests, whether 
+  $f(x_{1}),f(x_{2}),\ldots,f(x_{\ell(\kappa)+1})$ are pairwise different. 
+
+  As the notion of  statistical distance is stronger than computational
+  indistinguishability (see \autoref{thm:statistically}), we can thus
+  conclude that there is a constant $\eta < 1$ such that for every
+  \ac{PPTM} $\DDist$, we have
+  \begin{align*}
+    &\Adv_{\DDist,\chan,\SEnc_{f}}(\kappa) \leq\\   
+    &\quad\ell(\kappa)\cdot \left(2^{\fout_{F}(\kappa)-\minent(\chan,n)}+\eta^{2^{\fout_{F}(\kappa)}\cdot
+  \kappa}\right)+\\
+    &\quad 2\InSec^{\prf}_{(\algf',\Gen),\chan}(q\ell,t,\kappa)+ \frac{q(\kappa)\cdot (n+1)\cdot b\cdot 
+        (q(\kappa)-1)}{n\cdot 2^{b}}+\\
+    &\quad     \InSec^{\prf}_{(\algf',\Gen)}(\ell+1,(\ell+1)^{2},\kappa)+\frac{(\ell(\kappa)+1)^{2}}{2^{b}},
+  \end{align*}
+  as $\Ward$ makes at most $q(\kappa)$ calls to its challenging
+  oracle. If $f$ is truly random, $\Ward$ thus needs to distinguish
+  between the channel distribution and between $\SEnc_{f}$. 
+  This immediately implies that 
+  \begin{align*}
+    &\Pr_{f}[\Dist^{f}(1^{\kappa})=1] \leq\\
+    &\quad \frac{1}{2}+   \ell(\kappa)\cdot \left(2^{\fout_{F}(\kappa)-\minent(\chan,n)}+\eta^{2^{\fout_{F}(\kappa)}\cdot
+  \kappa}\right)+\\
+    &\quad 2\InSec^{\prf}_{(\algf',\Gen),\chan}(q\ell,t,\kappa)+ \frac{q(\kappa)\cdot (n+1)\cdot b\cdot 
+        (q(\kappa)-1)}{n\cdot 2^{b}}+\\
+    &\quad     \InSec^{\prf}_{(\algf',\Gen)}(\ell+1,(\ell+1)^{2},\kappa)+\frac{(\ell(\kappa)+1)^{2}}{2^{b}}.
+  \end{align*}
+
+  As $\Adv_{\Dist,(\algf,\Gen)}(\kappa)=\left| \Pr[\Dist^{\algf_{k}}(1^{\kappa})=1] -
+    \Pr[\Dist^{f}(1^{\kappa})]\right|$, this concludes our security
+  analysis of $\InSec^{\sscha}_{\Steg,\chan}(q,t,\kappa)$.
+
+  The simulation of each call to $\SEnc_{f}$ can be carried out in time
+  $\landauO((\ell(\kappa)+1)\cdot 2^{b}\cdot \kappa)$ if one has access
+  to the channel oracle.  The number of calls to the function oracle $f$
+  is bounded by
+  $\landauO(q(\kappa)\cdot (\ell(\kappa)+1)\cdot 2^{b}\cdot \kappa)$ The
+  running time of $\Dist$ is thus at most
+  $\landauO(q(\kappa)\cdot (\ell(\kappa)+1)\cdot 2^{b}\cdot
+  \kappa)+t(\kappa)$ and the number of queries that $\Dist$ performs is
+  at most
+  $\landauO(q(\kappa)\cdot(\ell(\kappa)+1)\cdot 2^{b}\cdot \kappa)$.
+  
+\myNote{Reliability}
+      Concerning the reliability, we construct for every message $m=m_{1},\ldots,m_{\ell(\kappa)}$ and
+      every history $h$ a
+      different distinguisher $\Dist_{m,h}$ against $\algf$. The attacker $\Dist_{m,h}$ with
+      function oracle $f$  first computes the decoding
+      $m'\gets\SDec_{f}(k,\SEnc_{f}(k,m,h))$ and returns $1$ if $m=m'$. 
+
+\myNote{$f=\algf_{k}$}
+If $f=\algf_{k}$,
+      we have
+      \begin{align*}
+        &\Pr_{k}[\Dist_{m,h}^{\algf_{k}}(1^{\kappa})=1]\ = \
+        \Pr_{k}[m\neq \SDec(k,\SEnc(k,m,h))]. 
+      \end{align*}
+
+\myNote{$f\sgets \Fun(n,b)$}
+      If $f$ is a truly random function from
+      $\Fun(n,b)$ and all samples $d_{1},d_{2},\ldots $
+      taken from the channel oracle $\chan$ are different, the
+      probabilities $\Pr[f(d_{i})=m_{j}]$ are independent, as we can assume
+      that a new random function is evaluated on each $d_{i}$. Denote
+      the event that all of the $d_{i}$ are pairwise different with
+      $\overline{\collision}$. The probability that none of this samples
+      evaluates to $m$ is then bounded by
+      \begin{align*}
+        &\Pr_{f}[m\neq \SDec_{f}(\SEnc_{f}(m,h))\mid \overline{\collision}
+        ]\ \leq \\
+        &\sum_{j=1}^{\ell(\kappa)+1} \prod_{i=1}^{2^{b}\cdot
+          \kappa}\Pr_{f}[f(d_{i})\neq m_j]\ \leq\\
+        &\tag{*}
+          \label{eq:rel:unbounded:one}
+        (\ell(\kappa)+1)\cdot \left(1-\frac{1}{2^{b}}\right)^{2^{b}\cdot
+        \kappa}\ \leq \\
+        &(\ell(\kappa)+1)\cdot \exp(-\kappa). 
+      \end{align*}
+      By definition, the maximal probability of any element from the
+      channel is bounded from above by
+      $2^{-\minent(\chan,n)}$. The probability
+      that $d_{i}=d_{j}$ for $i\neq j$ is thus bounded by
+      $2^{-\minent(\chan,n(\kappa))}$. Hence
+      \begin{align*}
+        &\Pr[\collision]\leq \\
+        &((\ell(\kappa)+1)\cdot \kappa\cdot 2^{b})^{2}\cdot
+        2^{-\minent(\chan,n)}=\\
+        &\tag{**}
+          \label{eq:rel:unbounded:two}
+        (\ell(\kappa)+1)^{2}\cdot \kappa^{2}\cdot 2^{2b-\minent(\chan,n)}.
+      \end{align*}
+      If $p=\Pr[\collision]$, we can combine
+      \eqref{eq:rel:unbounded:one} and \eqref{eq:rel:unbounded:two} and conclude
+      \begin{align*}
+        &\Pr_{f}[m\neq \SDec_{f}(\SEnc_{f}(m,h))]\ =\\
+        &\Pr_{f}[m\neq \SDec_{f}(\SEnc_{f}(m,h))\mid
+        \overline{\collision}]\cdot (1-p)
+        +\\
+        &\quad\Pr_{f}[m\neq \SDec_{f}(\SEnc_{f}(m,h))\mid
+        \collision]\cdot p
+      \end{align*}
+      Hence, we have
+      \begin{align*}
+        &\Pr_{f}[m\neq \SDec_{f}(\SEnc_{f}(m,h))]\ \leq\\
+        &(\ell(\kappa)+1)\cdot \exp(-\kappa)+(\ell(\kappa)+1)^{2}\cdot \kappa^{2}\cdot
+          2^{2b-\minent(\chan,n)}.
+      \end{align*}
+      We thus have
+      \begin{align*}
+        &\left|\Pr_{k}[\Dist_{m,h}^{\algf_{k}}(1^{\kappa})=1] -
+          \Pr_{f}[\Dist_{m,h}^{f}(1^{\kappa})=1]\right|=\\
+        &\bigl|\Pr_{k}[m\neq
+          \SDec(k,\SEnc(k,m,h))]-\\
+        &\quad (\ell(\kappa)+1)\cdot
+          \exp(-\kappa)+(\ell(\kappa)+1)^{2}\cdot 
+          \kappa^{2}\cdot 2^{2b-\minent(\chan,n)}\bigl|.
+      \end{align*}
+
+      The simulation of the call to $\SEnc_{f}$ can be carried out in
+      time $\landauO((\ell(\kappa)+1)\cdot 2^{b}\cdot \kappa)$ with
+      $2^{b}\cdot \kappa$ calls to the function oracle $f$. The running
+      time of $\Dist_{m,h}$ is thus at most
+      $\landauO((\ell(\kappa)+1)\cdot 2^{b}\cdot \kappa)+t$ and the
+      number of queries of $\Dist_{m,h}$ is at most
+      $\landauO((\ell(\kappa)+1)\cdot 2^{b}\cdot \kappa)$.
+
+      Reordering these terms thus gives us
+      \begin{align*}
+        &\unrel_{\Steg,\chan}(\kappa) \leq\\
+       &\quad
+         \InSec^{\prf}_{(\algf,\Gen),\chan}\left((\ell+1)2^{b}\kappa\ ,\ (\ell+1)2^{b}
+        \kappa\ ,\ 2^{b}\kappa\right)+\\
+      &\quad  (\ell(\kappa)+1)\cdot \exp(-\kappa)+(\ell(\kappa)+1)^{2} \cdot
+        \kappa^{2}\cdot  2^{2b-\minent(\chan,n)}.
+      \end{align*}
+\end{proof}
+
+
+ 
+
+
+By combining \autoref{thm:goldreich_gen}, 
+\autoref{thm:dist_prf_exist} and \autoref{thm:stego_exists}
+together, we can conclude the existence of a secure black-box
+stegosystem (see \autoref{th:main:existexp}
+for an informal statement) and in particular:
+
+
+\begin{theorem}
+  \label{thm:stego_negl}
+  Let $\chan$ be a channel and let $\alpha_1, \alpha_2$ be
+  constants with $1>\alpha_{1}\geq \alpha_{2}>0$. Furthermore, let
+  $\negl_{\algo{G}}$ and $\negl_{\algo{G'}}$ be two negligible functions such that for
+  every polynomial $p$, it holds that
+  \begin{align*}
+    &\InSec^{\dist}_{G(\{0,1\}^{\kappa}),\{0,1\}^{N},\chan}(1,p,N) \ \leq \
+      \negl_{G}(\kappa),\\
+    &\InSec^{\dist}_{G'(\{0,1\}^{\kappa}),\{0,1\}^{B},\chan}(1,p,B) \ \leq \ \negl_{G'}(\kappa).
+  \end{align*}
+  
+  Furthermore, let $(\algf,\Gen)$ and $(\algf',\Gen)$ be the \acp{PRF}
+  constructed from $\algo{G}$ and $\algo{G'}$, let
+  $n(\kappa)=\kappa^{\alpha_{1}}$ be the document length and
+  $\ell(\kappa)\cdot b(\kappa)=\ell(\kappa)\cdot \kappa^{\alpha_{2}}$ be the
+  message length for some polynomial $\ell$. If
+  $\minent(\chan,n(\kappa))> 2b(\kappa)$, then the rejection sampling
+  stegosystem
+  \begin{align*}
+    \Steg=\RejSam^{\algf,(\Gen^{\algf'},\Enc^{\algf'},\Dec^{\algf'})}
+  \end{align*}
+  is a secure,
+  reliable and rate-efficient stegosystem on $\chan$. 
+\end{theorem}
+
+ \begin{proof}
+\myNote{Security}
+  Recall that $N=2^{n}\cdot b$ and $B=2^{b}\cdot b$.
+   Assume  $\Ward$ is a Warden with
+   $\Adv^{\sscha}_{\Ward,\Steg,\chan}(\kappa)=\InSec^{\sscha}_{\Steg,\chan}(q,t,\kappa)$. 
+   \autoref{thm:stego_exists} then implies that
+    \begin{align*}
+      &\InSec^{\sscha}_{\Steg,\chan}(q,t,\kappa) \leq\\
+      &\quad \InSec^{\prf}_{(\algf,\Gen),\chan}\left(q(\ell+1)2^{b}\kappa\ ,\
+        q(\ell+q)2^{b}\kappa\ ,\ 2^{b}\cdot \kappa\right)+ \tag{a}\\
+      &\quad q(\kappa)(\ell(\kappa)+1)\left(2^{b-\minent(\chan,n)}+\eta^{2^{b}\kappa}\right)+\tag{b}\\
+      &\quad \InSec^{\prf}_{(\algf',\Gen)}(\ell+1\ ,\ (\ell+1)^{2}\ ,\ \kappa)  +\tag{c}\\
+      &\quad 2\InSec^{\prf}_{(\algf',\Gen),\chan}(2q\ell\ ,\ t\ ,\ \kappa) +\tag{d}\\
+      &\quad \frac{q(\kappa)\cdot (n+1)\cdot b\cdot 
+        (q(\kappa)-1)}{n\cdot 2^{b}} \tag{e}
+    \end{align*}
+    for a constant $\eta < 1$. 
+
+    \myNote{(b)+(e)}Clearly, both of the two terms
+    $q(\kappa)(\ell(\kappa)+1)\left(2^{b-\minent(\chan,n)}+\eta^{2^{b}\kappa}\right)$
+    and
+    $\frac{q(\kappa)\cdot (n+1)\cdot b\cdot (q(\kappa)-1)}{n\cdot
+      2^{b}}$ are negligible in $\kappa$, as $\chan$ has sufficiently high
+    min-entropy. There is thus a negligible function $\negl$ such that
+ \begin{align*}
+   &q(\kappa)(\ell(\kappa)+1)\left(2^{b-\minent(\chan,n)}+\eta^{2^{b}\kappa}\right)+\\
+   &\quad\frac{q(\kappa)\cdot (n+1)\cdot b\cdot 
+        (q(\kappa)-1)}{n\cdot 2^{b}} \leq\\
+   &\negl(\kappa).
+ \end{align*}
+
+ \myNote{(a)}As $q,t,\ell$ and $b$ are polynomials, by using
+ \autoref{thm:dist_prf_exist}, we have
+ \begin{align*}
+      &\InSec^{\prf}_{(\algf,\Gen),\chan}\left(q(\ell+1)2^{b}\kappa\ ,\
+        q(\ell+q)2^{b}\kappa\ ,\ 2^{b}\cdot \kappa\right)\leq\\
+   &\InSec^{\dist}_{\algo{G}(\{0,1\}^{\kappa}),\{0,1\}^{N}}(1,p,N)
+ \end{align*}
+for a polynomial $p$.
+This insecurity is negligible by the assumption and there is thus a
+negligible function $\negl'$ such that
+\begin{align*}
+      &\InSec^{\prf}_{(\algf,\Gen),\chan}\left(q(\ell+1)2^{b}\kappa\ ,\
+        q(\ell+q)2^{b}\kappa\ ,\ 2^{b}\cdot \kappa\right)\leq\\
+      &\negl'(\kappa).
+\end{align*}
+
+\myNote{(c)+(d)}Furthermore, \autoref{thm:dist_prf_exist} also implies (as $q,t$ and
+$\ell$ are polynomials) that
+\begin{align*}
+  &\InSec^{\prf}_{(\algf',\Gen)}\left(\ell+1,(\ell+1)^{2},\kappa\right)+2\InSec^{\prf}_{(\algf',\Gen),\chan}(q\ell,t,\kappa)\ \leq\\
+  &3\InSec^{\dist}_{\algo{G'}(\{0,1\}^{\kappa}),\{0,1\}^{B},\chan}(1,p,B)
+\end{align*}
+for some polynomial $p$. 
+This insecurity is negligible in $\kappa$ by assumption and there is
+thus a negligible function $\negl''$ such that
+\begin{align*}
+  &\InSec^{\prf}_{(\algf',\Gen)}\left(\ell+1,(\ell+1)^{2},\kappa\right)+2\InSec^{\prf}_{(\algf',\Gen),\chan}(q\ell,t,\kappa)\leq\\
+  &\negl''(\kappa).
+\end{align*}
+
+In conclusion, we have
+\begin{align*}
+  \InSec^{\sscha}_{\Steg,\chan}(q,t,\kappa)\leq \negl(\kappa)+\negl'(\kappa)+\negl''(\kappa).
+\end{align*}
+The stegosystem $\Steg$ is thus secure on $\chan$.
+
+\myNote{Reliability}
+Concerning the unreliability, we can proceed similarly. 
+\autoref{thm:stego_exists} implies that
+    \begin{align*}
+      &\unrel_{\Steg,\chan}(\kappa) \leq\\
+       &\quad
+         \InSec^{\prf}_{(\algf,\Gen),\chan}\left((\ell+1)2^{b}\kappa\ ,\ (\ell+1)2^{b}
+        \kappa\ ,\ 2^{b}\kappa\right)+\\
+      &\quad  (\ell(\kappa)+1)\cdot \exp(-\kappa)+(\ell(\kappa)+1)^{2} \cdot
+        \kappa^{2}\cdot  2^{2b-\minent(\chan,n)}.
+    \end{align*}
+Due to sufficient min-entropy of $\chan$ and the fact, that
+$\ell$, $b$ and $n$ are polynomials, there is a negligible
+function $\negl$ such that
+\begin{align*}
+      & (\ell(\kappa)+1)\cdot \exp(-\kappa)+(\ell(\kappa)+1)^{2} \cdot
+        \kappa^{2}\cdot  2^{2b-\minent(\chan,n)}\leq \\
+  &\negl(\kappa).
+\end{align*}
+
+ As above, \autoref{thm:dist_prf_exist} shows that
+ \begin{align*}
+   &\InSec^{\prf}_{(\algf,\Gen),\chan}\left((\ell+1)2^{b}\kappa\ ,\ (\ell+1)2^{b}
+     \kappa\ ,\ 2^{b}\kappa\right)\leq\\
+   &\InSec^{\dist}_{\algo{G}(\{0,1\}^{\kappa},\{0,1\}^{N},\chan}(1,p,N)
+ \end{align*}
+ for a polynomial $p$.  This is negligible by assumption
+there is thus a negligible function $\negl'$
+such that
+\begin{align*}
+  \unrel_{\Steg,\chan}(\kappa)\leq \negl(\kappa)+\negl'(\kappa). 
+\end{align*}
+The stegosystem $\Steg$ is thus reliable on $\chan$.
+
+As we embed $b(\kappa)= \kappa^{\alpha_{2}}$ bits into a single document
+of length $n(\kappa)=\kappa^{\alpha_{1}}$, the
+transmission rate $\fout_{\algf}(\kappa)$ is equal to $b(\kappa)$.  As
+the min-entropy
+$\minent(\chan,n)\leq \kappa^{\alpha_{1}}$, the
+stegosystem $\Steg$ is rate-efficient on $\chan$, as
+$\alpha_{1},\alpha_{2}$ are constants.
+ \end{proof}
+
+
+Note that the precondition concerning the two negligible functions
+$\negl_{G},\negl_{G'}$ is always fulfilled, if the channel oracle can be
+simulated in time $\poly(N)=\exp(\kappa^{\alpha_{1}})$. This is due to
+\autoref{thm:dist_prf_exist}, that states the security of the
+pseudorandom function. We have thus shown that the imbalance between the
+running times of the stegoencoder and the warden introduced and used in
+\cite{hopper2009provably} by \citeauthor{hopper2009provably} has
+dramatic consequences: Unconditionally secure, reliable and rate-efficient universal
+stegosystems exists in this scenario.
+
+\section{Unconditional Lower Bound}
+\label{sec:lower_bound}
+In order to give an unconditional lower bound, we make use of a lower
+bound by \citeauthor{dedic2009lower} in \cite{dedic2009lower}. By providing the warden $\Ward$
+with an efficient test whether a document belongs to the support of the
+channel, they prove:
+
+\begin{theorem}[{\cite[Theorem 1]{dedic2009lower}}]
+\label{thm:lower_bound}
+  For every universal (not necessarily of polynomial-time complexity)
+  stegosystem $\Steg$  there exists a  channel $\chan$ such that  
+  \begin{align*}
+    \InSec^{*}_{\Steg,\chan}(\kappa) + \unrel_{\Steg,\chan}(\kappa) \ \ge \ 
+       \frac{1}{2} - \frac{e\cdot \query_{\Steg,\chan}(\kappa)}{2^{\rate_{\Steg,\chan}(\kappa)}} -o(1),    
+  \end{align*}
+  where $\InSec^{*}$ denotes the insecurity against polynomial \ac{SS-CHA}-wardens with
+  an auxiliary \emph{oracle for testing membership} in the support of $\chan$.
+
+\end{theorem}
+\citeauthor{dedic2009lower} then argue that the assumption that a warden has an oracle
+for membership-testing is not feasible, if the channel is chosen
+completely random. By making use of the fact that the warden can
+choose a history, while the stegoencoder can not, we will show how an
+\emph{efficient} warden is able to test membership of a completely
+random channel.
+
+Let $\bm{S}_n$ be the set of all subsets of $\{0,1\}^{n}$ of
+cardinality $n/2$. For $S\in \bm{S}_n$, let $\chan_{S}$ be the following
+channel, where $\vec{1}$ denotes the vector of length $n$ that contains
+a $1$ at every position:
+\begin{itemize}
+\item $\chan(S)_{\varnothing,n}$ is the uniform distribution on
+  $\{0,1\}^{n}$.
+\item $\chan(S)_{\vec{1}||d,n}$ is the uniform distribution on all
+  strings in $\{0,1\}^{n}$ that start with $1$, if $d\in S$ or the
+  uniform distribution on all strings in $\{0,1\}^{n}$ that start with
+  $0$, if $d\not\in S$ (i.e. the first position indicates the membership
+  of $d$ in $S$).
+\item $\chan(S)_{h,n}$ is the uniform distribution on $S$ for all other
+  histories.
+\end{itemize}
+The warden $\Ward$ for the family $\{\chan(S)\ \mid\ S\in \bm{S}_n\}_{n\in \nats}$ now
+works as follows: It randomly chooses a history
+$h\gets \{0,1\}^{n}\setminus \{\vec{1}\}$ and $m=00\ldots 0$ 
+\textendash\  a message of length $\ell(\kappa)\cdot b(\kappa)$ containing only $0$-bits \textendash\ 
+and gets
+the results $d_{1},d_{2},\ldots,d_{\ell(\kappa)}$ from the challenging oracle on
+$h$ and $m$. For $i\in \{1,\ldots,\ell(\kappa)\}$, it takes a sample
+$s_{i}\gets \chan(S)_{\vec{1}||d_{i},n}$. If every sample $s_{i}$ starts
+with $1$, the warden returns ``Non-Stego'' (\ie $b'=1$ in the
+\ac{SS-CHA}-experiment) and else ``Stego'' (\ie $b'=0$ in the \ac{SS-CHA}-experiment). The
+warden $\Ward$ is thus able to test membership in $S$ efficiently by making
+use of the channel. Note that the stegoencoder can not make use of these
+capabilities of $\chan(S)$ as Alice can only make queries to $\chan(S)_{h,n}$, 
+where $h$ does not start with $\vec{1}$. We use here the 
+definition for channel access as in \cite{hopper2009provably}, which 
+assumes that the encoder has an access to the marginal channel distributions $\chan_h$
+for the histories $h$ starting with adversarial chosen prefixes. 
+
+
+
+We can thus efficiently simulate an oracle for membership-testing and
+\autoref{thm:lower_bound} thus implies 
+(the formal statement of \autoref{th:main:lower:bound}):
+\begin{theorem}
+\label{th:main:lower:bound:formal}
+  For every universal (not necessarily efficient) stegosystem
+  $\Steg$   there exists a channel $\chan$ such that  
+  \[
+    \InSec^{\sscha}_{\Steg,\chan}(\kappa) + \unrel_{\Steg,\chan}(\kappa) \ \ge \ 
+       \frac{1}{2} - \frac{e\cdot \query_{\Steg,\chan}(\kappa)}{2^{\rate_{\Steg,\chan}(\kappa)}} - o(1).
+  \]
+\end{theorem}
+Note that in contrast to \autoref{thm:lower_bound_crypto}, no
+cryptographic assumption is necessary and in contrast to 
+\autoref{thm:lower_bound}, no membership-oracle is necessary. Our lower
+bound thus holds unconditionally. Furthermore, this lower bound holds
+even when the running time of the stegosystem $\Steg$ is much larger (say
+$2^{2^{\kappa}}$) than the running time of $\Ward$ (say
+$\poly(\kappa)$). As the stegosystem $\Steg$ of
+\autoref{sec:secure-steg-exists} has $\query_{\Steg,\chan}(\kappa)=2^{\kappa^{\alpha_{2}}}\cdot \kappa$
+and $\rate_{\Steg,\chan}(\kappa)=\kappa^{\alpha_{2}}$,
+\autoref{th:main:lower:bound:formal} also directly implies that
+  $\Steg$ has (asymptotically) optimal query complexity. 
+
+Note that this method only works because of the asymmetry between Alice
+and Warden: While Warden has oracle-access for all possible histories,
+Alice can only use the history chosen by Warden.
+
+\section{Conclusions and Further Work}
+
+
+We first gave the first universally secure, reliable and rate-efficient stegosystem by using
+pseudorandom functions of very high hardness. The running time of the
+stegosystem is roughly $2^{2^{o(\kappa)}}$.
+The work of \citeauthor{dedic2009lower} in \cite{dedic2009lower}
+gives the best known lower bound of a running
+time of $\omega(\poly(\kappa))$ for any universal secure, reliable 
+stegosystem (under cryptographic assumptions and of the rate $\omega(\log \kappa)$). We proved
+that by making use of the imbalance between encoder and warden, this
+lower bound also holds without any assumption and for any rate-efficient stegosystem.  
+
+We also showed that the common phrase ``Steganography is Cryptography'' is
+provably wrong as the communication channel is a very important part of
+the steganographic setting. 
+
+
 
 
 %%% Local Variables:
 %%% TeX-master: "../main"
 %%% End:
 
+
+%  LocalWords:  Fridrich FEG
